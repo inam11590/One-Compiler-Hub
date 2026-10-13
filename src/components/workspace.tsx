@@ -55,6 +55,7 @@ export function Workspace({ selectedTool: initialTool, onToolChange }: Workspace
       setActiveTool(initialTool);
       setCurrentCode(initialTool.defaultCode);
       setConsoleOutput(initialTool.mockOutput);
+      setActiveFile(initialTool.fileName);
     }
   }, [initialTool, activeTool.id]);
 

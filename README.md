@@ -1,19 +1,25 @@
-# OneCompilerHub — Step 1 Frontend Foundation
+# OneCompilerHub — Step 2 Advanced Navigation, Smart Search & Tool Discovery
 
 > **World-Class Online Coding Platform & Developer Playground**  
 > Build, experiment, and explore 18 programming environments directly in your browser with a modern SaaS developer workspace.
+
+[![Live Website](https://img.shields.io/badge/Live-Vercel-blue?style=flat-square)](https://one-compiler-hub.vercel.app/)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-OneCompilerHub-black?style=flat-square&logo=github)](https://github.com/inam11590/onecompilerhub)
 
 ---
 
 ## 🚀 Overview
 
-**OneCompilerHub** is designed for developers, students, and educators who need a fast, zero-configuration online coding environment. 
+**OneCompilerHub** is engineered for developers, students, and educators who need a fast, zero-configuration online coding environment across 18 modern programming languages, web stacks, and databases.
 
-### Step 1 Milestone Scope
-- **Frontend Design Foundation**: Complete responsive SaaS user interface built with Next.js 14 App Router, TypeScript, and Tailwind CSS.
-- **18 Programming Environments**: Full technology catalog with vector icons, starter snippets, and filter metadata.
-- **Monaco Code Editor**: VS Code-grade in-browser editor with syntax highlighting, file explorer, multi-tab terminal panels, and theme synchronization.
-- **Demo Workspace**: Interactive simulation modes for visual verification; real compiler containers and execution backend will be connected in **Step 2**.
+### Step 2 Milestone Scope
+- **Professional Navigation & Dropdowns**: Active route highlighting with `usePathname()`, accessible desktop dropdown menus for *Compilers*, *Web Development*, and *Databases*, and a mobile navigation drawer that closes automatically upon selection.
+- **Smart Client-Side Search**: Instant keyword matching, case-insensitive substring search, search suggestion chips, alias resolution (e.g. `py` → Python/Pygame; `cpp` → C++; `database` → MySQL/PostgreSQL/MongoDB/PL/SQL; `backend` → FastAPI/Spring Boot/Node.js), and full keyboard navigation (↑ / ↓ / ↵ / ESC).
+- **Category Filtering**: Dual-filter architecture uniting category pills (*All Tools*, *Popular*, *Programming Languages*, *Web Development*, *Databases*, *Frameworks*) with real-time text search.
+- **Dedicated Tool Pages (`/tools/[slug]`)**: Dynamic App Router routes pre-rendered for all 18 tools with technical introductions, 4 core capability cards, beginner-friendly learning guides, related technology graphs, and embedded Monaco code workspaces.
+- **Curated Explore Experience (`/explore`)**: Editorial selections for featured full-stack technologies, popular languages, and beginner-friendly stacks (zero fake statistics or user counts).
+- **Category Directory Pages**: Dedicated routes for `/compilers`, `/web-development`, and `/databases`.
+- **Production SEO & Sitemap**: Automated `sitemap.xml` and `robots.txt` generation via App Router metadata.
 
 ---
 
@@ -34,61 +40,53 @@
 
 OneCompilerHub provides dedicated starter templates and presets for 18 core environments:
 
-1. **HTML** (HTML5 Semantic Web)
-2. **Python** (Python 3.11 Runtime)
-3. **JavaScript** (Modern ECMAScript 2024)
-4. **Java** (Java 21 LTS Enterprise)
-5. **MySQL** (Relational SQL Queries)
-6. **C** (C17 Bare-Metal Systems)
-7. **C++** (C++20 High Performance)
-8. **PHP** (PHP 8.3 Web Scripting)
-9. **C#** (.NET 8 Modern Runtime)
-10. **FastAPI** (Python High-Speed Async APIs)
-11. **Lua** (Lua 5.4 Game & Systems Scripting)
-12. **PL/SQL** (Procedural SQL & Database Logic)
-13. **Node.js** (V8 Event-Driven Backend)
-14. **MongoDB** (NoSQL Document Queries)
-15. **Spring Boot** (Java Enterprise Microservices)
-16. **React** (Component-Based UI Playground)
-17. **PostgreSQL** (Advanced Object-Relational SQL)
-18. **Pygame** (2D Game Loop Engine)
+1. **HTML** (`/tools/html`) — HTML5 Semantic Web
+2. **Python** (`/tools/python`) — Python 3.11 Runtime
+3. **JavaScript** (`/tools/javascript`) — Modern ECMAScript 2024
+4. **Java** (`/tools/java`) — Java 21 LTS Enterprise
+5. **MySQL** (`/tools/mysql`) — Relational SQL Queries
+6. **C** (`/tools/c`) — C17 Bare-Metal Systems
+7. **C++** (`/tools/cpp`) — C++20 High Performance
+8. **PHP** (`/tools/php`) — PHP 8.3 Web Scripting
+9. **C#** (`/tools/csharp`) — .NET 8 Modern Runtime
+10. **FastAPI** (`/tools/fastapi`) — Python High-Speed Async APIs
+11. **Lua** (`/tools/lua`) — Lua 5.4 Game & Systems Scripting
+12. **PL/SQL** (`/tools/plsql`) — Procedural SQL & Database Logic
+13. **Node.js** (`/tools/nodejs`) — V8 Event-Driven Backend
+14. **MongoDB** (`/tools/mongodb`) — NoSQL Document Queries
+15. **Spring Boot** (`/tools/spring-boot`) — Java Enterprise Microservices
+16. **React** (`/tools/react`) — Component-Based UI Playground
+17. **PostgreSQL** (`/tools/postgresql`) — Advanced Object-Relational SQL
+18. **Pygame** (`/tools/pygame`) — 2D Game Loop Engine
 
 ---
 
 ## 🧩 Architectural Features
 
-### 1. Navigation & Header
-- Sticky responsive navigation with custom OneCompilerHub glowing hex-shield brand logo and wordmark.
-- Filter category quick-nav: **Compilers**, **Web Development**, **Databases**, **Explore**.
-- Quick search shortcut (`⌘K` modal) across all tools.
-- Native Light/Dark mode toggle powered by `next-themes`.
-- Auth dialog placeholders with developer sign-in UI (GitHub, Google, Email).
+### 1. Navigation & Dropdowns
+- Sticky header with backdrop blur.
+- Hover & keyboard-friendly dropdowns for major tool categories.
+- Active page indicator synced with Next.js router.
+- Mobile drawer navigation with sub-links.
+- Universal `⌘K` search shortcut palette.
 
-### 2. Homepage Hero
-- Bold hero typography: *"Code Smarter. Build Faster."*
-- Highlight message: *"OneCompilerHub — Your Online Coding Workspace"*
-- Two prominent CTAs: **Start Coding** & **Explore Languages**.
-- Interactive mini code editor preview with realistic Python code, syntax styling, line numbers, and simulated output panel.
+### 2. Smart Search & Filters
+- Real-time search by name, category, file extension, and rich search keywords/aliases.
+- Search suggestions for common paradigms (e.g., Python, C++, Backend, Databases).
+- Matching term highlight rendering.
+- Arrow key navigation with Enter selection.
 
-### 3. Programming Tools Grid
-- Client-side search bar filtering tool names, descriptions, categories, and file extensions in real-time.
-- Category filters: **All Tools**, **Popular**, **Programming**, **Web Development**, **Databases**, **Frameworks**.
-- Interactive tool cards with custom vector logos, hover animations, and *"Launch in Demo Workspace"* modal view.
+### 3. Dynamic Tool Routes (`/tools/[slug]`)
+- Pre-rendered static generation via `generateStaticParams`.
+- Breadcrumb navigation (`Home > Tools > Name`).
+- Key features, beginner guides, and related stack links.
+- Interactive Monaco editor preview loaded with that tool's template.
 
-### 4. Coding Workspace UI
-- **File Explorer Sidebar**: Collapsible file tree with multiple files (`main.py`, `README.md`, `config.json`).
-- **Language Selector Dropdown**: Instant switching between all 18 tools with automatic Monaco syntax mode and starter template reloading.
-- **Monaco Code Editor**: Line numbers, word wrap, responsive sizing, and light/dark theme synchronization.
-- **Toolbar Actions**: Run (Demo), Stop, Reset, Copy Code (with toast notification).
-- **Tabbed Panels**: Output terminal, STDIN arguments input, static diagnostic reports.
-- **Layout Modes**: Flexible side-by-side or stacked split layouts + Fullscreen editor toggle.
-- **Demo Workspace Badge**: Clearly informs developers that real compilers are introduced in Step 2.
-
-### 5. Additional Sections
-- **Why OneCompilerHub?**: Highlights 5 core platform advantages.
-- **How It Works**: 3 clear steps for developers.
-- **Frequently Asked Questions**: Accessible, animated accordion addressing Step 1 vs Step 2, security, and supported languages.
-- **Footer**: Brand wordmark, navigation links, and built-in modals for About, Contact, Privacy Policy, and Terms of Service (zero broken links).
+### 4. SEO & Indexing
+- Dynamic metadata generator for every tool route.
+- Canonical URL declarations.
+- Automated `sitemap.xml` mapping all 18 tool pages and category routes.
+- Standard `robots.txt`.
 
 ---
 
@@ -98,73 +96,58 @@ OneCompilerHub provides dedicated starter templates and presets for 18 core envi
 OneCompilerHub/
 ├── src/
 │   ├── app/
+│   │   ├── compilers/           # /compilers category page
+│   │   ├── databases/           # /databases category page
+│   │   ├── explore/             # /explore curated discovery page
+│   │   ├── web-development/     # /web-development category page
+│   │   ├── tools/[slug]/        # Dynamic reusable tool page component
 │   │   ├── fonts/               # Geist font files
-│   │   ├── globals.css          # CSS variables, theme classes, scrollbars
-│   │   ├── layout.tsx           # SEO metadata, ThemeProvider, viewport config
-│   │   └── page.tsx             # Main OneCompilerHub dashboard
+│   │   ├── globals.css          # Theme tokens, scrollbars, utility styles
+│   │   ├── layout.tsx           # Root layout, ThemeProvider, global metadata
+│   │   ├── page.tsx             # Main dashboard
+│   │   ├── robots.ts            # Search engine crawl rules
+│   │   └── sitemap.ts           # Dynamic XML sitemap generator
 │   ├── components/
-│   │   ├── auth-modal.tsx       # Sign-in / Sign-up dialog placeholder
-│   │   ├── faq.tsx              # Accessible FAQ accordion component
-│   │   ├── footer.tsx           # Footer with legal and support modals
+│   │   ├── auth-modal.tsx       # Auth UI dialog placeholder
+│   │   ├── faq.tsx              # Accessible accordion FAQ
+│   │   ├── footer.tsx           # Footer with legal & info modal dialogs
 │   │   ├── hero.tsx             # Hero section with interactive preview
-│   │   ├── how-it-works.tsx     # 3-step workflow section
-│   │   ├── logo.tsx             # OneCompilerHub custom SVG logo & wordmark
-│   │   ├── navbar.tsx           # Sticky responsive navbar & mobile menu
-│   │   ├── search-dialog.tsx    # Modal search palette (⌘K)
-│   │   ├── theme-provider.tsx   # next-themes integration wrapper
-│   │   ├── theme-toggle.tsx     # Light/Dark mode toggle button
-│   │   ├── tool-detail-modal.tsx# Coming Soon & Playground preview modal
-│   │   ├── tool-icons.tsx       # 18 official SVG tech icons
-│   │   ├── tools-grid.tsx       # Interactive 18-tool filterable grid
+│   │   ├── how-it-works.tsx     # 3-step workflow guide
+│   │   ├── logo.tsx             # Custom SVG hex-shield brand logo
+│   │   ├── navbar.tsx           # Sticky navbar with dropdowns & active states
+│   │   ├── search-dialog.tsx    # Smart search palette with keyboard navigation
+│   │   ├── theme-provider.tsx   # next-themes integration
+│   │   ├── theme-toggle.tsx     # Dark/light mode toggle
+│   │   ├── tool-detail-modal.tsx# Coming Soon & Playground launcher modal
+│   │   ├── tool-icons.tsx       # Vector tech brand icons
+│   │   ├── tools-grid.tsx       # 18-tool filterable grid with smart search
 │   │   ├── why-us.tsx           # Platform benefits section
 │   │   └── workspace.tsx        # Monaco editor workspace with tabbed panels
 │   ├── data/
-│   │   └── tools.ts             # Metadata & starter code for 18 tools
+│   │   └── tools.ts             # 18 tools data, keywords, aliases, search helpers
 │   ├── lib/
-│   │   └── utils.ts             # Tailwind class merge utility
+│   │   └── utils.ts             # Tailwind class merging utility
 │   └── types/
-│       └── index.ts             # TypeScript interfaces for tools and categories
-├── tailwind.config.ts           # Electric Blue & Deep Navy design tokens
-├── tsconfig.json                # TypeScript compiler configuration
+│       └── index.ts             # Type definitions
+├── tailwind.config.ts           # Design system configuration
+├── tsconfig.json                # TypeScript strict config
 └── package.json                 # Dependencies and build scripts
 ```
 
 ---
 
-## 💻 Getting Started
+## 💻 Commands
 
-### Prerequisites
-- Node.js 18.17+ or Node.js 20+
-- npm 9+
-
-### 1. Install Dependencies
 ```bash
-npm install
-```
-
-### 2. Run the Development Server
-```bash
+# Start development server
 npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### 3. Run Static Type Checking & Linting
-```bash
+# Run static type checking & ESLint
 npm run lint
-```
 
-### 4. Build for Production
-```bash
+# Build for production
 npm run build
+
+# Start production server
 npm run start
 ```
-
----
-
-## 🔒 Roadmap (Step 2 Preview)
-
-- Containerized compiler backends (Docker/gVisor sandboxes)
-- Live stdout / stderr streaming over WebSockets
-- Safe execution timeouts and memory limits
-- Real database execution engines for PostgreSQL and MySQL
-- User accounts and cloud project persistence

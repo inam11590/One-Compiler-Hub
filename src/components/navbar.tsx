@@ -1,23 +1,35 @@
 "use client";
 
-import React, { useState } from "react";
-import { Search, Menu, X, ArrowRight } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  Search,
+  Menu,
+  X,
+  ArrowRight,
+  ChevronDown,
+} from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AuthModal } from "@/components/auth-modal";
 import { SearchDialog } from "@/components/search-dialog";
-import { ProgrammingTool } from "@/types";
+import { ProgrammingTool, ToolCategory } from "@/types";
+import { ToolIcon } from "@/components/tool-icons";
 
 interface NavbarProps {
   onSelectTool?: (tool: ProgrammingTool) => void;
-  onFilterCategory?: (category: string) => void;
+  onFilterCategory?: (category: ToolCategory) => void;
 }
 
 export function Navbar({ onSelectTool, onFilterCategory }: NavbarProps) {
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const openAuth = (mode: "signin" | "signup") => {
     setAuthMode(mode);
@@ -25,45 +37,185 @@ export function Navbar({ onSelectTool, onFilterCategory }: NavbarProps) {
     setMobileMenuOpen(false);
   };
 
-  const navLinks = [
-    { label: "Home", href: "#hero" },
-    { label: "Compilers", href: "#tools", category: "programming" },
-    { label: "Web Development", href: "#tools", category: "web" },
-    { label: "Databases", href: "#tools", category: "database" },
-    { label: "Explore", href: "#workspace" },
+  const handleMouseEnter = (name: string) => {
+    if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
+    setActiveDropdown(name);
+  };
+
+  const handleMouseLeave = () => {
+    dropdownTimeoutRef.current = setTimeout(() => {
+      setActiveDropdown(null);
+    }, 150);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
+    };
+  }, []);
+
+  const navItems = [
+    {
+      id: "home",
+      label: "Home",
+      href: "/",
+      isActive: pathname === "/",
+    },
+    {
+      id: "compilers",
+      label: "Compilers",
+      href: "/compilers",
+      category: "programming" as ToolCategory,
+      isActive: pathname === "/compilers",
+      items: [
+        { name: "Python", slug: "python", icon: "python", desc: "AI, data & scripting" },
+        { name: "C++", slug: "cpp", icon: "cpp", desc: "High performance core" },
+        { name: "Java", slug: "java", icon: "java", desc: "Enterprise applications" },
+        { name: "C#", slug: "csharp", icon: "csharp", desc: ".NET cloud runtime" },
+        { name: "C", slug: "c", icon: "c", desc: "Systems & embedded" },
+        { name: "Lua", slug: "lua", icon: "lua", desc: "Lightweight scripting" },
+      ],
+      footerLink: { label: "Explore All Compilers", href: "/compilers" },
+    },
+    {
+      id: "web",
+      label: "Web Development",
+      href: "/web-development",
+      category: "web" as ToolCategory,
+      isActive: pathname === "/web-development",
+      items: [
+        { name: "HTML", slug: "html", icon: "html", desc: "Semantic web structures" },
+        { name: "JavaScript", slug: "javascript", icon: "javascript", desc: "Universal web interactivity" },
+        { name: "React", slug: "react", icon: "react", desc: "Component UI framework" },
+        { name: "Node.js", slug: "nodejs", icon: "nodejs", desc: "Event-driven backend" },
+        { name: "PHP", slug: "php", icon: "php", desc: "Server-side web scripting" },
+      ],
+      footerLink: { label: "Explore Web Ecosystem", href: "/web-development" },
+    },
+    {
+      id: "databases",
+      label: "Databases",
+      href: "/databases",
+      category: "database" as ToolCategory,
+      isActive: pathname === "/databases",
+      items: [
+        { name: "MySQL", slug: "mysql", icon: "mysql", desc: "Relational SQL database" },
+        { name: "PostgreSQL", slug: "postgresql", icon: "postgresql", desc: "Advanced object-relational" },
+        { name: "MongoDB", slug: "mongodb", icon: "mongodb", desc: "Document NoSQL database" },
+        { name: "PL/SQL", slug: "plsql", icon: "plsql", desc: "Procedural SQL blocks" },
+      ],
+      footerLink: { label: "Explore All Databases", href: "/databases" },
+    },
+    {
+      id: "explore",
+      label: "Explore",
+      href: "/explore",
+      isActive: pathname === "/explore",
+    },
   ];
 
-  const handleNavClick = (link: typeof navLinks[0]) => {
-    if (link.category && onFilterCategory) {
-      onFilterCategory(link.category);
+  const handleLinkSelect = (item: typeof navItems[0]) => {
+    if (item.category && onFilterCategory && pathname === "/") {
+      onFilterCategory(item.category);
     }
+    setActiveDropdown(null);
     setMobileMenuOpen(false);
   };
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-white/85 dark:bg-navy-900/85 border-b border-slate-200/80 dark:border-navy-800 transition-colors">
+      <header className="sticky top-0 z-40 w-full backdrop-blur-md bg-white/90 dark:bg-navy-900/90 border-b border-slate-200/80 dark:border-navy-800 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-4">
           {/* Left: Custom OneCompilerHub logo + brand wordmark */}
           <div className="flex items-center gap-3">
             <Logo size="md" />
           </div>
 
-          {/* Center: Navigation Links (Desktop) */}
-          <nav className="hidden md:flex items-center gap-1 lg:gap-2">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={() => handleNavClick(link)}
-                className="px-3.5 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-brand-500 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800/60 transition-colors"
-              >
-                {link.label}
-              </a>
-            ))}
+          {/* Center: Desktop Navigation with Active States and Dropdowns */}
+          <nav className="hidden md:flex items-center gap-1 lg:gap-1.5" aria-label="Main Navigation">
+            {navItems.map((item) => {
+              const hasDropdown = Boolean(item.items);
+              const isOpen = activeDropdown === item.id;
+
+              return (
+                <div
+                  key={item.id}
+                  className="relative"
+                  onMouseEnter={() => (hasDropdown ? handleMouseEnter(item.id) : undefined)}
+                  onMouseLeave={hasDropdown ? handleMouseLeave : undefined}
+                >
+                  <Link
+                    href={item.href}
+                    onClick={() => handleLinkSelect(item)}
+                    className={`inline-flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-semibold transition-all duration-150 ${
+                      item.isActive
+                        ? "text-brand-600 dark:text-brand-400 bg-brand-500/10 dark:bg-brand-500/15"
+                        : "text-slate-600 dark:text-slate-300 hover:text-brand-500 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800/60"
+                    }`}
+                    aria-expanded={hasDropdown ? isOpen : undefined}
+                    aria-haspopup={hasDropdown ? "true" : undefined}
+                  >
+                    <span>{item.label}</span>
+                    {hasDropdown && (
+                      <ChevronDown
+                        className={`w-3.5 h-3.5 transition-transform duration-200 text-slate-400 ${
+                          isOpen ? "rotate-180 text-brand-500" : ""
+                        }`}
+                      />
+                    )}
+                  </Link>
+
+                  {/* Dropdown Menu */}
+                  {hasDropdown && isOpen && (
+                    <div
+                      className="absolute left-0 mt-1 w-72 rounded-2xl border border-slate-200 dark:border-navy-750 bg-white dark:bg-navy-850 p-2 shadow-2xl shadow-slate-900/10 dark:shadow-black/40 animate-in fade-in slide-in-from-top-2 duration-150 z-50"
+                      role="menu"
+                      aria-orientation="vertical"
+                    >
+                      <div className="space-y-0.5">
+                        {item.items?.map((sub) => (
+                          <Link
+                            key={sub.slug}
+                            href={`/tools/${sub.slug}`}
+                            onClick={() => setActiveDropdown(null)}
+                            className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-navy-800 transition-colors group text-left"
+                            role="menuitem"
+                          >
+                            <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-navy-900 border border-slate-200/80 dark:border-navy-750 flex items-center justify-center p-1.5 shrink-0 group-hover:scale-105 transition-transform">
+                              <ToolIcon name={sub.icon} className="w-4 h-4" />
+                            </div>
+                            <div className="overflow-hidden">
+                              <div className="font-semibold text-xs text-slate-900 dark:text-white group-hover:text-brand-500 dark:group-hover:text-brand-400 transition-colors">
+                                {sub.name}
+                              </div>
+                              <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                                {sub.desc}
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+
+                      {item.footerLink && (
+                        <div className="mt-2 pt-2 border-t border-slate-100 dark:border-navy-800 px-2 pb-1">
+                          <Link
+                            href={item.footerLink.href}
+                            onClick={() => setActiveDropdown(null)}
+                            className="inline-flex items-center justify-between w-full text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline"
+                          >
+                            <span>{item.footerLink.label}</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </nav>
 
-          {/* Right: Actions */}
+          {/* Right: Search, Theme Toggle, Auth Buttons, Mobile Hamburger */}
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Search Trigger */}
             <button
@@ -105,35 +257,59 @@ export function Navbar({ onSelectTool, onFilterCategory }: NavbarProps) {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-navy-800 focus:outline-none"
+              className="md:hidden p-2 rounded-xl border border-slate-200 dark:border-navy-750 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-navy-800 focus:outline-none"
               aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Dropdown Menu */}
+        {/* Mobile Dropdown Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-b border-slate-200 dark:border-navy-800 bg-white dark:bg-navy-900 px-4 pt-2 pb-6 space-y-3 animate-in slide-in-from-top-2 duration-200">
-            <div className="grid gap-1">
-              {navLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  onClick={() => handleNavClick(link)}
-                  className="px-3 py-2.5 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-navy-800 transition-colors"
-                >
-                  {link.label}
-                </a>
+          <div className="md:hidden border-b border-slate-200 dark:border-navy-800 bg-white dark:bg-navy-900 px-4 pt-3 pb-6 space-y-4 animate-in slide-in-from-top-2 duration-200 max-h-[80vh] overflow-y-auto">
+            <div className="space-y-1">
+              {navItems.map((item) => (
+                <div key={item.id} className="border-b border-slate-100 dark:border-navy-800/60 pb-1">
+                  <Link
+                    href={item.href}
+                    onClick={() => handleLinkSelect(item)}
+                    className={`flex items-center justify-between w-full px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                      item.isActive
+                        ? "bg-brand-500/10 text-brand-600 dark:text-brand-400"
+                        : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-navy-800"
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                    <ArrowRight className="w-3.5 h-3.5 opacity-60" />
+                  </Link>
+
+                  {/* Sub items in mobile */}
+                  {item.items && (
+                    <div className="pl-4 pr-1 py-1 grid grid-cols-2 gap-1.5 mt-1">
+                      {item.items.map((sub) => (
+                        <Link
+                          key={sub.slug}
+                          href={`/tools/${sub.slug}`}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="flex items-center gap-2 p-1.5 rounded-lg text-xs text-slate-600 dark:text-slate-400 hover:text-brand-500 hover:bg-slate-50 dark:hover:bg-navy-800"
+                        >
+                          <ToolIcon name={sub.icon} className="w-3.5 h-3.5 shrink-0" />
+                          <span className="truncate">{sub.name}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
 
-            <div className="pt-3 border-t border-slate-200 dark:border-navy-800 flex flex-col gap-2">
+            <div className="pt-2 flex flex-col gap-2">
               <button
                 type="button"
                 onClick={() => openAuth("signin")}
-                className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-navy-700 text-sm font-medium text-slate-700 dark:text-slate-200 text-center hover:bg-slate-50 dark:hover:bg-navy-800"
+                className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-navy-700 text-sm font-semibold text-slate-700 dark:text-slate-200 text-center hover:bg-slate-50 dark:hover:bg-navy-800"
               >
                 Sign In (Demo)
               </button>

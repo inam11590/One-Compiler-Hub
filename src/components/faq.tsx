@@ -18,24 +18,24 @@ export function FAQ() {
         "OneCompilerHub is an online coding platform and developer playground designed to allow developers, students, and engineers to write, inspect, and practice code across 18 modern programming languages, web stacks, and databases directly in their browser.",
     },
     {
-      question: "Does OneCompilerHub execute code in this Step 1 release?",
+      question: "Does OneCompilerHub execute code in this Step 2 release?",
       answer:
-        "No. This release implements Step 1 (the complete frontend design foundation, responsive UI/UX, Monaco editor integration, and navigation system). Real execution containers, compilers, and database query runners will be implemented in Step 2. All current executions in this release are strictly labeled as simulated UI demos.",
+        "Step 2 delivers advanced navigation, smart keyword/alias search, dedicated dynamic tool documentation pages, and curated tool discovery. All code execution remains strictly simulated UI demo mode. Real backend compiler containers and execution servers will be introduced in Step 3.",
     },
     {
-      question: "Which programming languages and frameworks are supported in the catalog?",
+      question: "Which 18 programming languages and frameworks are supported?",
       answer:
-        "OneCompilerHub supports 18 core technologies: HTML, Python, JavaScript, Java, MySQL, C, C++, PHP, C#, FastAPI, Lua, PL/SQL, Node.js, MongoDB, Spring Boot, React, PostgreSQL, and Pygame.",
+        "OneCompilerHub includes 18 core environments: HTML, Python, JavaScript, Java, MySQL, C, C++, PHP, C#, FastAPI, Lua, PL/SQL, Node.js, MongoDB, Spring Boot, React, PostgreSQL, and Pygame.",
     },
     {
-      question: "Do I need to install compilers or SDKs on my computer?",
+      question: "How does the smart search work?",
       answer:
-        "No local software installation is required. OneCompilerHub runs entirely within the web browser. When full compilers are enabled in Step 2, code will compile in secure, isolated cloud sandbox environments.",
+        "Our smart search system supports full text queries, case-insensitive partial matches, category filtering, and extensive aliases (e.g. 'py' matches Python and Pygame; 'backend' matches FastAPI, Node.js, and Spring Boot; 'database' matches MySQL, PostgreSQL, MongoDB, and PL/SQL).",
     },
     {
-      question: "What features are coming in Step 2?",
+      question: "Are there dedicated pages for each technology?",
       answer:
-        "Step 2 will introduce real backend code execution microservices, live stdout/stderr streams, execution timeout guards, database transaction playgrounds, user authentication, and persistent cloud snippet saving.",
+        "Yes! Every one of our 18 technologies has a dedicated dynamic page with detailed feature breakdowns, beginner guides, related technology graphs, and an embedded Monaco coding workspace.",
     },
     {
       question: "Is dark mode supported?",

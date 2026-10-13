@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { X, Mail } from "lucide-react";
 
@@ -22,7 +23,7 @@ export function Footer() {
             Our mission is to eliminate setup friction for developers, students, and educators worldwide with an accessible, high-performance web interface.
           </p>
           <div className="p-3 rounded-xl bg-slate-100 dark:bg-navy-900 border border-slate-200 dark:border-navy-750 text-xs">
-            <strong>Release Status:</strong> Step 1 — Frontend Foundation &amp; UI Architecture.
+            <strong>Release Status:</strong> Step 2 — Advanced Navigation, Smart Search &amp; Tool Discovery.
           </div>
         </div>
       ),
@@ -35,7 +36,7 @@ export function Footer() {
       content: (
         <div className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
           <p>
-            Have feedback on the Step 1 UI/UX design or questions about upcoming compiler integrations?
+            Have feedback on the Step 2 UI/UX design or questions about upcoming compiler integrations?
           </p>
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-navy-900 border border-slate-200 dark:border-navy-750 space-y-2">
             <div className="flex items-center gap-2 text-xs">
@@ -58,7 +59,7 @@ export function Footer() {
       content: (
         <div className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
           <p>
-            At OneCompilerHub, your privacy is paramount. In this Step 1 frontend foundation release:
+            At OneCompilerHub, your privacy is paramount. In this Step 2 release:
           </p>
           <ul className="list-disc pl-5 space-y-1 text-xs">
             <li>We do not collect or transmit private personal identifiable information (PII).</li>
@@ -79,8 +80,8 @@ export function Footer() {
             Welcome to OneCompilerHub. By accessing our platform, you acknowledge that:
           </p>
           <ul className="list-disc pl-5 space-y-1 text-xs">
-            <li>Step 1 constitutes a frontend layout prototype; code execution is simulated.</li>
-            <li>Users agree not to misuse playground containers or attempt unauthorized security penetration when Step 2 compilers become active.</li>
+            <li>Step 2 constitutes a frontend layout &amp; discovery prototype; code execution is simulated.</li>
+            <li>Users agree not to misuse playground containers or attempt unauthorized penetration testing.</li>
             <li>All product names and logos are trademarks of their respective owners.</li>
           </ul>
         </div>
@@ -100,7 +101,7 @@ export function Footer() {
                 OneCompilerHub is a modern, responsive online coding playground where developers, students, and educators write and explore 18 programming environments.
               </p>
               <div className="text-[11px] font-mono text-slate-400 dark:text-slate-500">
-                Frontend UI Foundation • Step 1
+                Frontend UI &amp; Discovery Foundation • Step 2
               </div>
             </div>
 
@@ -111,28 +112,29 @@ export function Footer() {
               </h4>
               <ul className="space-y-2">
                 <li>
-                  <a href="#hero" className="hover:text-brand-500 transition-colors">
+                  <Link href="/" className="hover:text-brand-500 transition-colors">
                     Home
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#tools" className="hover:text-brand-500 transition-colors">
-                    Compilers &amp; Tools (18)
-                  </a>
+                  <Link href="/compilers" className="hover:text-brand-500 transition-colors">
+                    Compilers &amp; Languages
+                  </Link>
                 </li>
                 <li>
-                  <a href="#workspace" className="hover:text-brand-500 transition-colors">
-                    Coding Workspace
-                  </a>
+                  <Link href="/web-development" className="hover:text-brand-500 transition-colors">
+                    Web Development
+                  </Link>
                 </li>
                 <li>
-                  <button
-                    type="button"
-                    onClick={openAbout}
-                    className="hover:text-brand-500 transition-colors text-left"
-                  >
-                    About
-                  </button>
+                  <Link href="/databases" className="hover:text-brand-500 transition-colors">
+                    Databases
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/explore" className="hover:text-brand-500 transition-colors">
+                    Explore Stacks
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -143,6 +145,15 @@ export function Footer() {
                 Legal &amp; Support
               </h4>
               <ul className="space-y-2">
+                <li>
+                  <button
+                    type="button"
+                    onClick={openAbout}
+                    className="hover:text-brand-500 transition-colors text-left"
+                  >
+                    About
+                  </button>
+                </li>
                 <li>
                   <button
                     type="button"

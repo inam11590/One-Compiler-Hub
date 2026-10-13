@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { X, Play, Clock } from "lucide-react";
+import Link from "next/link";
+import { X, Play, Clock, ExternalLink } from "lucide-react";
 import { ProgrammingTool } from "@/types";
 import { ToolIcon } from "@/components/tool-icons";
 
@@ -73,10 +74,10 @@ export function ToolDetailModal({
         <div className="p-4 rounded-xl bg-slate-50 dark:bg-navy-900 border border-slate-200 dark:border-navy-750 mb-6 space-y-2">
           <div className="flex items-center gap-2 text-xs font-semibold text-brand-600 dark:text-brand-400">
             <Clock className="w-4 h-4" />
-            <span>Compiler Engine Status: Step 1 UI Placeholder</span>
+            <span>Compiler Engine Status: Step 2 Discovery / Step 3 Sandbox</span>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-            Real compiler execution containers for <strong>{tool.name}</strong> will be implemented in Step 2. You can explore the starter template in our interactive demo workspace right now.
+            Real compiler execution containers for <strong>{tool.name}</strong> will be connected in Step 3. You can explore the starter template and syntax highlighting in our interactive demo workspace right now.
           </p>
         </div>
 
@@ -91,16 +92,17 @@ export function ToolDetailModal({
             className="flex-1 py-3 px-4 rounded-xl font-bold text-sm text-white bg-brand-500 hover:bg-brand-600 shadow-md shadow-brand-500/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
           >
             <Play className="w-4 h-4 fill-current" />
-            <span>Launch in Demo Workspace</span>
+            <span>Launch in Playground</span>
           </button>
 
-          <button
-            type="button"
+          <Link
+            href={`/tools/${tool.slug}`}
             onClick={onClose}
-            className="py-3 px-4 rounded-xl font-semibold text-sm text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-navy-700 hover:bg-slate-100 dark:hover:bg-navy-800 transition-colors"
+            className="py-3 px-4 rounded-xl font-semibold text-sm text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-navy-700 hover:bg-slate-100 dark:hover:bg-navy-800 transition-colors flex items-center justify-center gap-1.5"
           >
-            Close
-          </button>
+            <span>Documentation</span>
+            <ExternalLink className="w-3.5 h-3.5" />
+          </Link>
         </div>
       </div>
     </div>

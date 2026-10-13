@@ -6,6 +6,11 @@ export type ToolCategory =
   | "database"
   | "framework";
 
+export type AvailabilityStatus =
+  | "available_demo"
+  | "coming_soon"
+  | "in_development";
+
 export interface ProgrammingTool {
   id: string;
   name: string;
@@ -13,8 +18,13 @@ export interface ProgrammingTool {
   category: "programming" | "web" | "database" | "framework";
   categories: ToolCategory[];
   isPopular: boolean;
+  isFeatured: boolean;
+  isBeginnerFriendly: boolean;
+  availabilityStatus: AvailabilityStatus;
   shortDescription: string;
   longDescription: string;
+  searchKeywords: string[];
+  aliases: string[];
   iconName: string;
   accentColor: string;
   badgeBg: string;
@@ -26,10 +36,22 @@ export interface ProgrammingTool {
   mockOutput: string;
   mockExecutionTime: string;
   sampleInput?: string;
+  features: string[];
+  beginnerExplanation: string;
+  relatedToolSlugs: string[];
   documentationUrl?: string;
+}
+
+export interface NavDropdownItem {
+  label: string;
+  href: string;
+  description?: string;
+  icon?: string;
 }
 
 export interface NavItem {
   label: string;
   href: string;
+  category?: ToolCategory;
+  dropdown?: NavDropdownItem[];
 }
