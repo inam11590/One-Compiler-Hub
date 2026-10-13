@@ -144,13 +144,13 @@ export default function ToolPage({ params }: ToolPageProps) {
 
               {/* Right Column: Quick Navigation Buttons */}
               <div className="flex items-center gap-3 shrink-0">
-                <a
-                  href="#workspace"
+                <Link
+                  href={`/editor/${tool.slug}`}
                   className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-xs sm:text-sm text-white bg-brand-500 hover:bg-brand-600 shadow-md shadow-brand-500/25 active:scale-95 transition-all"
                 >
                   <Play className="w-4 h-4 fill-current" />
                   <span>Open Playground</span>
-                </a>
+                </Link>
 
                 <Link
                   href="/#tools"

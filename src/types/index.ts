@@ -55,3 +55,37 @@ export interface NavItem {
   category?: ToolCategory;
   dropdown?: NavDropdownItem[];
 }
+
+export interface WorkspaceFile {
+  id: string;
+  name: string;
+  path: string;
+  content: string;
+  isFolder: boolean;
+  parentId: string | null;
+  isDirty?: boolean;
+  language: string;
+  updatedAt: number;
+}
+
+export interface WorkspaceProject {
+  id: string;
+  name: string;
+  toolSlug: string;
+  files: WorkspaceFile[];
+  activeFileId: string | null;
+  openFileIds: string[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface EditorSettings {
+  fontSize: number;
+  tabSize: number;
+  wordWrap: "on" | "off";
+  minimap: boolean;
+  lineNumbers: "on" | "off" | "relative";
+  autoClosingBrackets: "always" | "languageDefined" | "never";
+  layout: "bottom" | "right";
+  theme: "vs-dark" | "vs" | "auto";
+}
