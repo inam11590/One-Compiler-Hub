@@ -10,10 +10,8 @@ export const metadata: Metadata = {
 
 export default function EditorRootPage() {
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col p-2 sm:p-4">
-      <div className="flex-1 w-full max-w-[1700px] mx-auto">
-        <CodeWorkspace initialToolSlug="python" />
-      </div>
+    <div className="h-screen w-screen overflow-hidden bg-slate-900 flex flex-col">
+      <CodeWorkspace initialToolSlug="python" isEmbedded={false} />
     </div>
   );
 }

@@ -49,9 +49,13 @@ const Editor = dynamic(() => import("@monaco-editor/react"), {
 
 interface CodeWorkspaceProps {
   initialToolSlug?: string;
+  isEmbedded?: boolean;
 }
 
-export function CodeWorkspace({ initialToolSlug = "python" }: CodeWorkspaceProps) {
+export function CodeWorkspace({
+  initialToolSlug = "python",
+  isEmbedded = false,
+}: CodeWorkspaceProps) {
   const { resolvedTheme } = useTheme();
 
   // Active Tool
@@ -387,10 +391,10 @@ export function CodeWorkspace({ initialToolSlug = "python" }: CodeWorkspaceProps
     setConsoleLogs([]);
   }, []);
 
-  const handleTriggerRun = () => {
+  const handleTriggerRun = useCallback(() => {
     setPreviewKey((k) => k + 1);
     showToast("Live preview reloaded");
-  };
+  }, []);
 
   // Settings update
   const handleUpdateSettings = (partial: Partial<EditorSettings>) => {
@@ -432,11 +436,27 @@ export function CodeWorkspace({ initialToolSlug = "python" }: CodeWorkspaceProps
     ? activeFile.content.trim().split(/\s+/).filter(Boolean).length
     : 0;
 
+  // Keyboard shortcut Ctrl+Enter / Cmd+Enter for run
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault();
+        if (isHtmlTool) {
+          handleTriggerRun();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isHtmlTool, handleTriggerRun]);
+
   return (
     <div
       ref={containerRef}
       className={`flex flex-col bg-slate-100 dark:bg-navy-950 text-slate-800 dark:text-slate-100 overflow-hidden ${
-        isFullscreen ? "h-screen w-screen" : "h-[760px] rounded-2xl border border-slate-200 dark:border-navy-750 shadow-2xl"
+        isFullscreen || !isEmbedded
+          ? "h-screen w-full"
+          : "h-[760px] rounded-2xl border border-slate-200 dark:border-navy-750 shadow-2xl"
       }`}
     >
       {/* Top Toolbar */}

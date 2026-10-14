@@ -18,7 +18,10 @@ import {
   FileCode,
   LayoutTemplate,
   Archive,
+  Sun,
+  Moon,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { ProgrammingTool } from "@/types";
 import { PROGRAMMING_TOOLS } from "@/data/tools";
 import { ToolIcon } from "@/components/tool-icons";
@@ -68,6 +71,7 @@ export function TopToolbar({
   const [pendingTemplateId, setPendingTemplateId] = useState<string | null>(null);
   const [showExecutionNotice, setShowExecutionNotice] = useState(false);
   const [copiedShare, setCopiedShare] = useState(false);
+  const { setTheme, resolvedTheme } = useTheme();
 
   const isHtml = currentTool.slug === "html";
 
@@ -417,6 +421,21 @@ export function TopToolbar({
           {copiedShare ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Share2 className="w-3.5 h-3.5" />}
         </button>
 
+        {/* Theme Toggle */}
+        <button
+          type="button"
+          onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+          className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800 transition-colors"
+          title={resolvedTheme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+          aria-label="Toggle theme"
+        >
+          {resolvedTheme === "dark" ? (
+            <Sun className="w-3.5 h-3.5 text-amber-400" />
+          ) : (
+            <Moon className="w-3.5 h-3.5 text-slate-600" />
+          )}
+        </button>
+
         {/* Settings Modal Toggle */}
         <button
           type="button"
@@ -471,13 +490,13 @@ export function TopToolbar({
         </div>
       )}
 
-      {/* Execution Modal Notice for other tools (Step 5 Status) */}
+      {/* Execution Modal Notice for other tools (Sandbox Status) */}
       {showExecutionNotice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="bg-white dark:bg-navy-850 border border-slate-200 dark:border-navy-700 rounded-2xl p-6 max-w-lg w-full shadow-2xl text-xs space-y-4">
             <div className="flex items-center gap-2.5 text-brand-500 font-bold text-sm">
               <Sparkles className="w-5 h-5 text-brand-500" />
-              <span>Step 5: Backend Execution API & Sandbox Architecture</span>
+              <span>Backend Execution API &amp; Sandbox Architecture</span>
             </div>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-xs">
               Target environment: <strong>{currentTool.name}</strong> ({currentTool.category}).
@@ -485,12 +504,12 @@ export function TopToolbar({
             <div className="p-3 bg-slate-50 dark:bg-navy-900 rounded-xl border border-slate-200 dark:border-navy-750 space-y-2 text-slate-600 dark:text-slate-300 text-[11px]">
               <p className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
                 <Info className="w-3.5 h-3.5 text-brand-500" />
-                Backend Security & Sandbox Architecture (Step 5):
+                Backend Security &amp; Sandbox Architecture:
               </p>
               <ul className="list-disc pl-5 space-y-1">
                 <li>FastAPI execution backend established with versioned REST contracts (<code>/api/v1</code>)</li>
                 <li>Centralized Language Registry configured for all 18 tools</li>
-                <li>Cryptographic Supabase JWT token verification & sliding-window rate limits</li>
+                <li>Cryptographic Supabase JWT token verification &amp; sliding-window rate limits</li>
                 <li>7-layer sandbox threat model: non-root execution, cgroups v2 resource quotas, read-only root filesystems, and zero cloud metadata access</li>
                 <li>Mock worker strictly forbidden from running in production environments</li>
               </ul>

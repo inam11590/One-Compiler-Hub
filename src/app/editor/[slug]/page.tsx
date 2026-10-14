@@ -37,10 +37,8 @@ export default function EditorSlugPage({ params }: EditorSlugPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col p-2 sm:p-4">
-      <div className="flex-1 w-full max-w-[1700px] mx-auto">
-        <CodeWorkspace initialToolSlug={tool.slug} />
-      </div>
+    <div className="h-screen w-screen overflow-hidden bg-slate-900 flex flex-col">
+      <CodeWorkspace initialToolSlug={tool.slug} isEmbedded={false} />
     </div>
   );
 }

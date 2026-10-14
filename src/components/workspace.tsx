@@ -12,7 +12,7 @@ interface WorkspaceProps {
 export function Workspace({ selectedTool }: WorkspaceProps) {
   return (
     <div className="w-full">
-      <CodeWorkspace initialToolSlug={selectedTool?.slug || "python"} />
+      <CodeWorkspace initialToolSlug={selectedTool?.slug || "python"} isEmbedded={true} />
     </div>
   );
 }
