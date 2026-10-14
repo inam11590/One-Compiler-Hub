@@ -150,23 +150,25 @@ export function OutputPanel({
 
         {activeTab === "terminal" && (
           <div className="space-y-3">
-            <div className="p-3 bg-amber-950/30 border border-amber-800/50 rounded-lg text-amber-200/90 text-xs flex items-start gap-2.5">
-              <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+            <div className="p-3 bg-brand-950/40 border border-brand-800/60 rounded-lg text-slate-200 text-xs flex items-start gap-2.5">
+              <Info className="w-4 h-4 text-brand-400 shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <p className="font-semibold text-amber-300">
-                  Step 3 IDE Notice: Remote Code Execution Engine Scheduled for Step 4
+                <p className="font-semibold text-brand-300">
+                  Step 5 Architecture: Backend Execution API & Sandbox Security Mode
                 </p>
-                <p className="text-[11px] text-amber-200/80 leading-relaxed">
-                  Real server-side container execution, native interactive shells, and compiler endpoints will be connected in Step 4. You can edit files, create project trees, and customize Monaco settings in this client-side release.
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  FastAPI Execution API contracts (<code>/api/v1</code>) and the 7-layer sandbox isolation architecture (cgroups v2, read-only root, non-root user 10001, no network, and blocked IMDS) have been established. Arbitrary execution remains safely disabled in production pending per-language sandbox rollout in future steps.
                 </p>
               </div>
             </div>
 
             <div className="font-mono text-slate-400 text-xs space-y-1">
               <p className="text-emerald-400">$ onecompiler-cli --version</p>
-              <p>OneCompilerHub Workspace v1.0.0 (Browser IDE Engine)</p>
+              <p>OneCompilerHub Workspace v1.1.0 (FastAPI Backend + Monaco IDE)</p>
               <p className="text-slate-500">Target environment: {languageName}</p>
-              <p className="text-slate-500">Storage engine: IndexedDB + Web Worker cache</p>
+              <p className="text-slate-500">Backend API Gateway: FastAPI v0.111 /api/v1</p>
+              <p className="text-slate-500">Sandbox Isolation: Hardened gVisor/Firecracker Spec</p>
+              <p className="text-slate-500">Storage engine: IndexedDB + Supabase Auth</p>
               <p className="text-emerald-400 pt-2">$ ready_</p>
             </div>
           </div>

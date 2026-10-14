@@ -140,13 +140,13 @@ export function TopToolbar({
           <button
             type="button"
             onClick={() => setShowExecutionNotice(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600/40 text-emerald-300/80 hover:bg-emerald-600/50 cursor-pointer text-xs font-semibold shadow-sm transition-all border border-emerald-500/30"
-            title="Remote code execution scheduled for Step 4"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-600/20 text-brand-300 hover:bg-brand-600/30 cursor-pointer text-xs font-semibold shadow-sm transition-all border border-brand-500/40"
+            title="Execution Backend & Sandbox Architecture Status"
           >
-            <Play className="w-3.5 h-3.5 fill-current" />
+            <Play className="w-3.5 h-3.5 fill-current text-brand-400" />
             <span>Run</span>
-            <span className="text-[10px] px-1 py-0.2 rounded bg-emerald-950/60 text-emerald-300 font-normal ml-0.5">
-              Step 4
+            <span className="text-[10px] px-1.5 py-0.2 rounded bg-brand-950/80 text-brand-300 font-mono ml-0.5 border border-brand-700/50">
+              Sandbox
             </span>
           </button>
         </div>
@@ -235,34 +235,33 @@ export function TopToolbar({
         </button>
       </div>
 
-      {/* Execution Modal Notice for Step 3 */}
+      {/* Execution Modal Notice for Step 5 */}
       {showExecutionNotice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white dark:bg-navy-850 border border-slate-200 dark:border-navy-700 rounded-2xl p-6 max-w-md w-full shadow-2xl text-xs space-y-4">
-            <div className="flex items-center gap-2.5 text-amber-500 font-bold text-sm">
-              <Sparkles className="w-5 h-5" />
-              <span>Step 3 IDE Architecture Status</span>
+          <div className="bg-white dark:bg-navy-850 border border-slate-200 dark:border-navy-700 rounded-2xl p-6 max-w-lg w-full shadow-2xl text-xs space-y-4">
+            <div className="flex items-center gap-2.5 text-brand-500 font-bold text-sm">
+              <Sparkles className="w-5 h-5 text-brand-500" />
+              <span>Step 5: Backend Execution API & Sandbox Architecture</span>
             </div>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-xs">
-              You are currently in <strong>Step 3: Professional Online IDE & Monaco Coding Workspace</strong>.
+              Target environment: <strong>{currentTool.name}</strong> ({currentTool.category}).
             </p>
-            <div className="p-3 bg-slate-50 dark:bg-navy-900 rounded-xl border border-slate-200 dark:border-navy-750 space-y-1.5 text-slate-600 dark:text-slate-300 text-[11px]">
+            <div className="p-3 bg-slate-50 dark:bg-navy-900 rounded-xl border border-slate-200 dark:border-navy-750 space-y-2 text-slate-600 dark:text-slate-300 text-[11px]">
               <p className="font-semibold text-slate-900 dark:text-white flex items-center gap-1.5">
                 <Info className="w-3.5 h-3.5 text-brand-500" />
-                What is fully functional in Step 3:
+                Backend Security & Sandbox Architecture (Step 5):
               </p>
               <ul className="list-disc pl-5 space-y-1">
-                <li>Monaco Editor with full syntax highlighting across 18 languages</li>
-                <li>Frontend File Explorer (create, rename, delete files & folders)</li>
-                <li>Multiple tabs, unsaved dirty state, and tab switching</li>
-                <li>Persistent storage with browser IndexedDB + localStorage fallback</li>
-                <li>Project JSON export & import</li>
-                <li>Configurable IDE preferences (font size, wrap, minimap)</li>
+                <li>FastAPI execution backend established with versioned REST contracts (<code>/api/v1</code>)</li>
+                <li>Centralized Language Registry configured for all 18 tools</li>
+                <li>Cryptographic Supabase JWT token verification & sliding-window rate limits</li>
+                <li>7-layer sandbox threat model: non-root execution, cgroups v2 resource quotas, read-only root filesystems, and zero cloud metadata access</li>
+                <li>Mock worker strictly forbidden from running in production environments</li>
               </ul>
             </div>
-            <p className="text-slate-500 dark:text-slate-400 text-[11px]">
-              Real remote compiler container execution, native interactive shells, and execution backends will be connected in <strong>Step 4</strong>.
-            </p>
+            <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px] leading-relaxed">
+              <strong>Production Safety Guard:</strong> Arbitrary code execution is intentionally disabled in production pending dedicated microVM / gVisor sandbox verification. OneCompilerHub does not fabricate fake compilation results.
+            </div>
             <div className="flex justify-end">
               <button
                 type="button"
