@@ -98,7 +98,11 @@ export default function SignUpPage() {
     setIsLoading(true);
 
     try {
-      const redirectUrl = `${siteUrl}/auth/callback?next=/dashboard`;
+      const origin =
+        typeof window !== "undefined" && window.location.origin
+          ? window.location.origin
+          : siteUrl;
+      const redirectUrl = `${origin.replace(/\/+$/, "")}/auth/callback?next=/dashboard`;
 
       const { data, error } = await supabase.auth.signUp({
         email: email.trim().toLowerCase(),
