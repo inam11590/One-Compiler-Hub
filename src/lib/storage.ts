@@ -257,3 +257,52 @@ export function parseProjectJSON(jsonString: string): WorkspaceProject {
   }
   return parsed as WorkspaceProject;
 }
+
+// List all saved local projects (from IndexedDB with localStorage fallback)
+export async function listAllProjects(): Promise<WorkspaceProject[]> {
+  if (typeof window === "undefined") return [];
+
+  const projects: WorkspaceProject[] = [];
+
+  try {
+    const db = await openDB();
+    const dbProjects = await new Promise<WorkspaceProject[]>((resolve) => {
+      const tx = db.transaction(STORE_NAME, "readonly");
+      const store = tx.objectStore(STORE_NAME);
+      const req = store.getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => resolve([]);
+    });
+
+    if (dbProjects && dbProjects.length > 0) {
+      return dbProjects.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+    }
+  } catch (err) {
+    console.warn("IndexedDB getAll failed, falling back to localStorage", err);
+  }
+
+  // Fallback to localStorage keys
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith("onecompiler_project_")) {
+        const item = localStorage.getItem(key);
+        if (item) {
+          try {
+            const parsed = JSON.parse(item) as WorkspaceProject;
+            if (parsed.id && parsed.toolSlug) {
+              projects.push(parsed);
+            }
+          } catch {
+            // ignore malformed items
+          }
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return projects.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+}
+

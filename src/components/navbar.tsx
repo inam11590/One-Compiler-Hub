@@ -9,13 +9,16 @@ import {
   X,
   ArrowRight,
   ChevronDown,
+  LayoutDashboard,
+  Settings,
+  LogOut,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { AuthModal } from "@/components/auth-modal";
 import { SearchDialog } from "@/components/search-dialog";
 import { ProgrammingTool, ToolCategory } from "@/types";
 import { ToolIcon } from "@/components/tool-icons";
+import { useAuth } from "@/components/auth/auth-provider";
 
 interface NavbarProps {
   onSelectTool?: (tool: ProgrammingTool) => void;
@@ -24,18 +27,13 @@ interface NavbarProps {
 
 export function Navbar({ onSelectTool, onFilterCategory }: NavbarProps) {
   const pathname = usePathname();
+  const { user, profile, isLoading, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const openAuth = (mode: "signin" | "signup") => {
-    setAuthMode(mode);
-    setAuthModalOpen(true);
-    setMobileMenuOpen(false);
-  };
+  const userMenuRef = useRef<HTMLDivElement | null>(null);
 
   const handleMouseEnter = (name: string) => {
     if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
@@ -49,7 +47,14 @@ export function Navbar({ onSelectTool, onFilterCategory }: NavbarProps) {
   };
 
   useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
       if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
     };
   }, []);
@@ -234,24 +239,112 @@ export function Navbar({ onSelectTool, onFilterCategory }: NavbarProps) {
             {/* Light/Dark Mode Toggle */}
             <ThemeToggle />
 
-            {/* Sign In Button */}
-            <button
-              type="button"
-              onClick={() => openAuth("signin")}
-              className="hidden sm:inline-flex items-center px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-brand-500 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800 transition-colors"
-            >
-              Sign In
-            </button>
+            {/* Authentication States */}
+            {isLoading ? (
+              /* Stable Skeleton Pill (Prevents Layout Shift) */
+              <div className="hidden sm:inline-block w-36 h-9 rounded-xl bg-slate-100 dark:bg-navy-800 animate-pulse" />
+            ) : user ? (
+              /* Authenticated User Menu */
+              <div className="relative" ref={userMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center gap-2 p-1.5 sm:px-2 sm:py-1.5 rounded-xl border border-slate-200 dark:border-navy-750 bg-slate-50 dark:bg-navy-850 hover:bg-slate-100 dark:hover:bg-navy-800 transition-colors focus:outline-none"
+                  aria-expanded={userMenuOpen}
+                  aria-haspopup="true"
+                  aria-label="User navigation menu"
+                >
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-tr from-brand-600 to-accent-500 text-white font-bold text-xs flex items-center justify-center overflow-hidden shrink-0">
+                    {profile?.avatar_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={profile.avatar_url}
+                        alt="Avatar"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span>
+                        {(profile?.display_name || user.email || "U")
+                          .slice(0, 2)
+                          .toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <span className="hidden sm:inline text-xs font-semibold text-slate-800 dark:text-slate-200 max-w-[100px] truncate">
+                    {profile?.display_name || user.email?.split("@")[0]}
+                  </span>
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
+                      userMenuOpen ? "rotate-180 text-brand-500" : ""
+                    }`}
+                  />
+                </button>
 
-            {/* Get Started Button */}
-            <button
-              type="button"
-              onClick={() => openAuth("signup")}
-              className="inline-flex items-center gap-1.5 px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-brand-600 via-brand-500 to-accent-500 hover:from-brand-500 hover:to-accent-600 shadow-md shadow-brand-500/20 active:scale-[0.98] transition-all"
-            >
-              <span>Get Started</span>
-              <ArrowRight className="w-3.5 h-3.5 hidden sm:inline" />
-            </button>
+                {/* User Dropdown */}
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-slate-200 dark:border-navy-750 bg-white dark:bg-navy-850 p-2 shadow-2xl shadow-slate-900/10 dark:shadow-black/40 animate-in fade-in slide-in-from-top-2 duration-150 z-50">
+                    <div className="px-3 py-2 border-b border-slate-100 dark:border-navy-800 mb-1">
+                      <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                        {profile?.display_name || "Developer"}
+                      </p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                        {user.email}
+                      </p>
+                    </div>
+
+                    <Link
+                      href="/dashboard"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-brand-500 hover:bg-slate-100 dark:hover:bg-navy-800 transition-colors"
+                    >
+                      <LayoutDashboard className="w-4 h-4 text-brand-500" />
+                      <span>Dashboard</span>
+                    </Link>
+
+                    <Link
+                      href="/settings/profile"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-brand-500 hover:bg-slate-100 dark:hover:bg-navy-800 transition-colors"
+                    >
+                      <Settings className="w-4 h-4 text-slate-400" />
+                      <span>Profile Settings</span>
+                    </Link>
+
+                    <div className="my-1 border-t border-slate-100 dark:border-navy-800" />
+
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setUserMenuOpen(false);
+                        await signOut();
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Unauthenticated Buttons */
+              <div className="flex items-center gap-2 sm:gap-2.5">
+                <Link
+                  href="/login"
+                  className="hidden sm:inline-flex items-center px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-brand-500 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800 transition-colors"
+                >
+                  Sign In
+                </Link>
+
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-brand-600 via-brand-500 to-accent-500 hover:from-brand-500 hover:to-accent-600 shadow-md shadow-brand-500/20 active:scale-[0.98] transition-all"
+                >
+                  <span>Get Started</span>
+                  <ArrowRight className="w-3.5 h-3.5 hidden sm:inline" />
+                </Link>
+              </div>
+            )}
 
             {/* Mobile Hamburger Menu Toggle */}
             <button
@@ -305,32 +398,76 @@ export function Navbar({ onSelectTool, onFilterCategory }: NavbarProps) {
               ))}
             </div>
 
+            {/* Mobile Auth Actions */}
             <div className="pt-2 flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => openAuth("signin")}
-                className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-navy-700 text-sm font-semibold text-slate-700 dark:text-slate-200 text-center hover:bg-slate-50 dark:hover:bg-navy-800"
-              >
-                Sign In (Demo)
-              </button>
-              <button
-                type="button"
-                onClick={() => openAuth("signup")}
-                className="w-full py-2.5 rounded-xl bg-brand-500 text-sm font-semibold text-white text-center hover:bg-brand-600 shadow-md shadow-brand-500/20"
-              >
-                Get Started Free
-              </button>
+              {user ? (
+                <div className="space-y-2">
+                  <div className="p-3 rounded-xl bg-slate-50 dark:bg-navy-850 border border-slate-200 dark:border-navy-750 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-brand-500 text-white font-bold text-sm flex items-center justify-center shrink-0">
+                      {(profile?.display_name || user.email || "U").slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="overflow-hidden">
+                      <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
+                        {profile?.display_name || "Developer"}
+                      </p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-brand-500 text-sm font-semibold text-white shadow-md shadow-brand-500/20"
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    <span>Dashboard</span>
+                  </Link>
+
+                  <Link
+                    href="/settings/profile"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-slate-200 dark:border-navy-700 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-navy-800"
+                  >
+                    <Settings className="w-4 h-4" />
+                    <span>Profile Settings</span>
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setMobileMenuOpen(false);
+                      await signOut();
+                    }}
+                    className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-sm font-semibold text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full py-2.5 rounded-xl border border-slate-200 dark:border-navy-700 text-sm font-semibold text-slate-700 dark:text-slate-200 text-center hover:bg-slate-50 dark:hover:bg-navy-800"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/signup"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="w-full py-2.5 rounded-xl bg-brand-500 text-sm font-semibold text-white text-center hover:bg-brand-600 shadow-md shadow-brand-500/20"
+                  >
+                    Get Started Free
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}
       </header>
-
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={authModalOpen}
-        onClose={() => setAuthModalOpen(false)}
-        mode={authMode}
-      />
 
       {/* Search Modal */}
       <SearchDialog
