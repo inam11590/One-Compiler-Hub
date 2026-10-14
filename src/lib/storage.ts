@@ -74,6 +74,245 @@ export function createStarterProject(toolSlug: string): WorkspaceProject {
   const tool = getToolBySlug(toolSlug) || PROGRAMMING_TOOLS[1]; // default python
   const now = Date.now();
 
+  // If HTML tool, initialize with the three-file architecture (index.html, style.css, script.js)
+  if (tool.slug === "html") {
+    const htmlFileId = "file-html";
+    const cssFileId = "file-css";
+    const jsFileId = "file-js";
+    const readmeFileId = "file-readme";
+
+    const files: WorkspaceFile[] = [
+      {
+        id: htmlFileId,
+        name: "index.html",
+        path: "/index.html",
+        content: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OneCompilerHub — Live HTML Preview</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="container">
+    <div class="card">
+      <div class="badge">Live Playground</div>
+      <h1 class="title">Hello, <span class="gradient-text">OneCompilerHub!</span></h1>
+      <p class="subtitle">
+        Write HTML, CSS & JavaScript and watch your changes render instantly in the isolated preview sandbox.
+      </p>
+
+      <div class="counter-box">
+        <button id="counter-btn" class="btn" type="button">
+          Clicks: <span id="count-value">0</span>
+        </button>
+        <button id="reset-btn" class="btn btn-outline" type="button">Reset</button>
+      </div>
+
+      <p id="feedback-msg" class="feedback">Click the button to test live DOM interactions!</p>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>`,
+        isFolder: false,
+        parentId: null,
+        language: "html",
+        updatedAt: now,
+      },
+      {
+        id: cssFileId,
+        name: "style.css",
+        path: "/style.css",
+        content: `/* Modern responsive layout styling */
+:root {
+  --primary: #435bff;
+  --primary-hover: #3246d8;
+  --bg-gradient: linear-gradient(135deg, #0b0f19 0%, #131b2e 100%);
+  --card-bg: rgba(26, 35, 58, 0.7);
+  --card-border: rgba(67, 91, 255, 0.25);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+  background: var(--bg-gradient);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.container {
+  width: 100%;
+  max-width: 480px;
+}
+
+.card {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #818cf8;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 9999px;
+  margin-bottom: 1rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.75rem;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #60a5fa 0%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 2rem;
+}
+
+.counter-box {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.btn {
+  background: var(--primary);
+  color: #ffffff;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(67, 91, 255, 0.3);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.btn-outline:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  box-shadow: none;
+}
+
+.feedback {
+  font-size: 0.85rem;
+  color: #38bdf8;
+  min-height: 1.25rem;
+}`,
+        isFolder: false,
+        parentId: null,
+        language: "css",
+        updatedAt: now,
+      },
+      {
+        id: jsFileId,
+        name: "script.js",
+        path: "/script.js",
+        content: `// OneCompilerHub - Live Interactive JavaScript
+console.log("🚀 HTML Playground running in isolated sandbox!");
+
+let count = 0;
+const countDisplay = document.getElementById("count-value");
+const counterBtn = document.getElementById("counter-btn");
+const resetBtn = document.getElementById("reset-btn");
+const feedbackMsg = document.getElementById("feedback-msg");
+
+if (counterBtn && countDisplay) {
+  counterBtn.addEventListener("click", () => {
+    count += 1;
+    countDisplay.textContent = count;
+    if (feedbackMsg) {
+      feedbackMsg.textContent = \`You clicked \${count} time\${count === 1 ? "" : "s"}!\`;
+    }
+    console.log("Click event dispatched:", { clicks: count, timestamp: new Date().toLocaleTimeString() });
+  });
+}
+
+if (resetBtn) {
+  resetBtn.addEventListener("click", () => {
+    if (count === 0) return;
+    console.info("Resetting count from:", count);
+    count = 0;
+    if (countDisplay) countDisplay.textContent = "0";
+    if (feedbackMsg) feedbackMsg.textContent = "Counter reset to zero.";
+  });
+}
+`,
+        isFolder: false,
+        parentId: null,
+        language: "javascript",
+        updatedAt: now,
+      },
+      {
+        id: readmeFileId,
+        name: "README.md",
+        path: "/README.md",
+        content: `# HTML, CSS & JavaScript Playground\n\nWelcome to your three-file live web playground in **OneCompilerHub**.\n\n### Project Files\n- **index.html**: Document structure & markup\n- **style.css**: CSS layout and visual theme\n- **script.js**: Client-side interactive JavaScript & DOM events\n\n### Live Features\n- **Real-Time Preview**: Updates automatically as you edit files\n- **Isolated Sandbox**: Sandboxed iframe with CSP network containment\n- **Live Console**: Intercepts console.log, warnings, and errors in the Console tab\n- **Device Switcher**: Test responsive layouts on Desktop, Tablet, and Mobile\n- **Export**: Download as separate files or a bundled ZIP\n\n*All edits autosave to your browser's IndexedDB storage.*`,
+        isFolder: false,
+        parentId: null,
+        language: "markdown",
+        updatedAt: now,
+      },
+    ];
+
+    return {
+      id: `project_html`,
+      name: "HTML, CSS & JS Playground",
+      toolSlug: "html",
+      files,
+      activeFileId: htmlFileId,
+      openFileIds: [htmlFileId, cssFileId, jsFileId],
+      createdAt: now,
+      updatedAt: now,
+    };
+  }
+
   const primaryFileId = "file-primary";
   const readmeFileId = "file-readme";
   const configFileId = "file-config";
@@ -108,8 +347,8 @@ export function createStarterProject(toolSlug: string): WorkspaceProject {
           project: `${tool.name} Workspace`,
           environment: tool.id,
           version: "1.0.0",
-          schema: "step3_ide",
-          compilerExecution: "scheduled_for_step4",
+          schema: "step5_backend",
+          compilerExecution: "sandbox_security_verification",
         },
         null,
         2

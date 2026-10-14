@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import {
   Play,
-  Square,
   Save,
   Download,
   Upload,
@@ -16,10 +15,14 @@ import {
   Sparkles,
   Info,
   Check,
+  FileCode,
+  LayoutTemplate,
+  Archive,
 } from "lucide-react";
 import { ProgrammingTool } from "@/types";
 import { PROGRAMMING_TOOLS } from "@/data/tools";
 import { ToolIcon } from "@/components/tool-icons";
+import { HTML_STARTER_TEMPLATES } from "@/lib/preview/templates";
 
 interface TopToolbarProps {
   projectName: string;
@@ -32,6 +35,13 @@ interface TopToolbarProps {
   isFullscreen: boolean;
   onToggleFullscreen: () => void;
   isSaving?: boolean;
+  // HTML Playground extensions
+  onSelectTemplate?: (templateId: string) => void;
+  onExportZip?: () => void;
+  onExportFile?: (extension: "html" | "css" | "js") => void;
+  onRunPreview?: () => void;
+  activeMobileTab?: "editor" | "preview" | "console";
+  onSelectMobileTab?: (tab: "editor" | "preview" | "console") => void;
 }
 
 export function TopToolbar({
@@ -45,10 +55,21 @@ export function TopToolbar({
   isFullscreen,
   onToggleFullscreen,
   isSaving,
+  onSelectTemplate,
+  onExportZip,
+  onExportFile,
+  onRunPreview,
+  activeMobileTab = "editor",
+  onSelectMobileTab,
 }: TopToolbarProps) {
   const [toolMenuOpen, setToolMenuOpen] = useState(false);
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  const [templateMenuOpen, setTemplateMenuOpen] = useState(false);
+  const [pendingTemplateId, setPendingTemplateId] = useState<string | null>(null);
   const [showExecutionNotice, setShowExecutionNotice] = useState(false);
   const [copiedShare, setCopiedShare] = useState(false);
+
+  const isHtml = currentTool.slug === "html";
 
   const handleShare = () => {
     if (typeof window !== "undefined") {
@@ -66,31 +87,38 @@ export function TopToolbar({
     }
   };
 
+  const handleConfirmTemplate = () => {
+    if (pendingTemplateId && onSelectTemplate) {
+      onSelectTemplate(pendingTemplateId);
+    }
+    setPendingTemplateId(null);
+  };
+
   return (
-    <div className="h-12 bg-white dark:bg-navy-900 border-b border-slate-200 dark:border-navy-750 px-3 flex items-center justify-between select-none z-20 shrink-0">
+    <div className="h-12 bg-white dark:bg-navy-900 border-b border-slate-200 dark:border-navy-750 px-2 sm:px-3 flex items-center justify-between select-none z-20 shrink-0">
       {/* Left: Brand / Project Title & Environment Selector */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <Link
           href="/"
-          className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-white hover:text-brand-500 transition-colors mr-1"
+          className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-white hover:text-brand-500 transition-colors mr-1 shrink-0"
         >
           <div className="w-5 h-5 rounded-md bg-gradient-to-tr from-brand-600 to-purple-600 flex items-center justify-center text-white text-[10px]">
             1C
           </div>
-          <span className="hidden sm:inline">OneCompilerHub</span>
+          <span className="hidden md:inline">OneCompilerHub</span>
         </Link>
 
         <span className="text-slate-300 dark:text-navy-700 hidden sm:inline">/</span>
 
         {/* Language Selector Dropdown */}
-        <div className="relative">
+        <div className="relative shrink-0">
           <button
             type="button"
             onClick={() => setToolMenuOpen(!toolMenuOpen)}
-            className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-navy-800 hover:bg-slate-200/80 dark:hover:bg-navy-750 text-slate-900 dark:text-white text-xs font-semibold border border-slate-200 dark:border-navy-700 transition-colors"
+            className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-navy-800 hover:bg-slate-200/80 dark:hover:bg-navy-750 text-slate-900 dark:text-white text-xs font-semibold border border-slate-200 dark:border-navy-700 transition-colors"
           >
             <ToolIcon name={currentTool.iconName} className="w-3.5 h-3.5" />
-            <span>{currentTool.name}</span>
+            <span className="truncate max-w-[90px] sm:max-w-none">{currentTool.name}</span>
             <ChevronDown className="w-3 h-3 text-slate-400" />
           </button>
 
@@ -129,62 +157,239 @@ export function TopToolbar({
         </div>
 
         {/* Project Name Breadcrumb */}
-        <span className="text-xs text-slate-500 dark:text-slate-400 hidden md:inline truncate max-w-[180px]">
+        <span className="text-xs text-slate-500 dark:text-slate-400 hidden lg:inline truncate max-w-[160px]">
           {projectName}
         </span>
       </div>
 
-      {/* Center: Execution Buttons (Disabled in Step 3 as requested) */}
+      {/* Center: Execution & Mode Buttons or Mobile Segments */}
       <div className="flex items-center gap-2">
-        <div className="relative">
+        {/* Mobile View Switcher (Visible on mobile/tablet) */}
+        {isHtml && onSelectMobileTab && (
+          <div className="flex lg:hidden bg-slate-200/80 dark:bg-navy-800 p-0.5 rounded-lg border border-slate-300 dark:border-navy-700 text-[11px]">
+            <button
+              type="button"
+              onClick={() => onSelectMobileTab("editor")}
+              className={`px-2 py-1 rounded-md transition-colors ${
+                activeMobileTab === "editor"
+                  ? "bg-white dark:bg-navy-700 font-bold text-brand-600 dark:text-brand-400 shadow-xs"
+                  : "text-slate-500 dark:text-slate-400"
+              }`}
+            >
+              Editor
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectMobileTab("preview")}
+              className={`px-2 py-1 rounded-md transition-colors ${
+                activeMobileTab === "preview"
+                  ? "bg-white dark:bg-navy-700 font-bold text-brand-600 dark:text-brand-400 shadow-xs"
+                  : "text-slate-500 dark:text-slate-400"
+              }`}
+            >
+              Preview
+            </button>
+            <button
+              type="button"
+              onClick={() => onSelectMobileTab("console")}
+              className={`px-2 py-1 rounded-md transition-colors ${
+                activeMobileTab === "console"
+                  ? "bg-white dark:bg-navy-700 font-bold text-brand-600 dark:text-brand-400 shadow-xs"
+                  : "text-slate-500 dark:text-slate-400"
+              }`}
+            >
+              Console
+            </button>
+          </div>
+        )}
+
+        {/* Run Action */}
+        {isHtml ? (
           <button
             type="button"
-            onClick={() => setShowExecutionNotice(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-600/20 text-brand-300 hover:bg-brand-600/30 cursor-pointer text-xs font-semibold shadow-sm transition-all border border-brand-500/40"
-            title="Execution Backend & Sandbox Architecture Status"
+            onClick={onRunPreview}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-sm transition-all"
+            title="Render Live HTML, CSS & JavaScript Preview"
           >
-            <Play className="w-3.5 h-3.5 fill-current text-brand-400" />
-            <span>Run</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded bg-brand-950/80 text-brand-300 font-mono ml-0.5 border border-brand-700/50">
-              Sandbox
-            </span>
+            <Play className="w-3.5 h-3.5 fill-current" />
+            <span className="hidden sm:inline">Run Preview</span>
           </button>
-        </div>
+        ) : (
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowExecutionNotice(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-600/20 text-brand-300 hover:bg-brand-600/30 cursor-pointer text-xs font-semibold shadow-sm transition-all border border-brand-500/40"
+              title="Execution Backend & Sandbox Architecture Status"
+            >
+              <Play className="w-3.5 h-3.5 fill-current text-brand-400" />
+              <span>Run</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded bg-brand-950/80 text-brand-300 font-mono ml-0.5 border border-brand-700/50">
+                Sandbox
+              </span>
+            </button>
+          </div>
+        )}
 
-        <button
-          type="button"
-          disabled
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-navy-800 text-slate-400 dark:text-slate-500 text-xs font-medium cursor-not-allowed border border-slate-200 dark:border-navy-700"
-          title="Stop execution (active only during remote runs in Step 4)"
-        >
-          <Square className="w-3 h-3 fill-current" />
-          <span className="hidden sm:inline">Stop</span>
-        </button>
+        {/* Starter Templates Dropdown for HTML */}
+        {isHtml && onSelectTemplate && (
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setTemplateMenuOpen(!templateMenuOpen)}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-navy-800 hover:bg-slate-200 dark:hover:bg-navy-750 text-slate-700 dark:text-slate-200 text-xs font-medium border border-slate-200 dark:border-navy-700 transition-colors"
+              title="Starter Templates"
+            >
+              <LayoutTemplate className="w-3.5 h-3.5 text-brand-500" />
+              <span className="hidden sm:inline">Templates</span>
+              <ChevronDown className="w-3 h-3 text-slate-400" />
+            </button>
+
+            {templateMenuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-30"
+                  onClick={() => setTemplateMenuOpen(false)}
+                />
+                <div className="absolute right-0 mt-1 w-64 bg-white dark:bg-navy-850 border border-slate-200 dark:border-navy-700 rounded-xl shadow-2xl z-40 p-1.5 animate-slide-up">
+                  <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    Starter Templates
+                  </div>
+                  {HTML_STARTER_TEMPLATES.map((tmpl) => (
+                    <button
+                      key={tmpl.id}
+                      type="button"
+                      onClick={() => {
+                        setTemplateMenuOpen(false);
+                        setPendingTemplateId(tmpl.id);
+                      }}
+                      className="w-full text-left p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-navy-800 transition-colors group"
+                    >
+                      <div className="font-semibold text-xs text-slate-800 dark:text-white group-hover:text-brand-500 flex items-center justify-between">
+                        <span>{tmpl.name}</span>
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-navy-750 text-slate-400 font-normal">
+                          {tmpl.category}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
+                        {tmpl.description}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Right: Save, Import/Export, Share, Settings, Fullscreen */}
+      {/* Right: Save, Export, Share, Settings, Fullscreen */}
       <div className="flex items-center gap-1">
         {/* Save button */}
         <button
           type="button"
           onClick={onSave}
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-navy-800 hover:bg-slate-200 dark:hover:bg-navy-750 text-slate-700 dark:text-slate-200 text-xs font-medium border border-slate-200 dark:border-navy-700 transition-colors"
-          title="Save project to browser storage"
+          className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-navy-800 hover:bg-slate-200 dark:hover:bg-navy-750 text-slate-700 dark:text-slate-200 text-xs font-medium border border-slate-200 dark:border-navy-700 transition-colors"
+          title="Save project to IndexedDB"
         >
           <Save className="w-3.5 h-3.5 text-brand-500" />
-          <span className="hidden lg:inline">{isSaving ? "Saving..." : "Save"}</span>
+          <span className="hidden xl:inline">{isSaving ? "Saving..." : "Save"}</span>
         </button>
 
-        {/* Export JSON */}
-        <button
-          type="button"
-          onClick={onExport}
-          className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800 transition-colors"
-          title="Export project as JSON"
-          aria-label="Export project"
-        >
-          <Download className="w-3.5 h-3.5" />
-        </button>
+        {/* Export / Download Menu */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setExportMenuOpen(!exportMenuOpen)}
+            className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800 transition-colors"
+            title="Download / Export Project"
+            aria-label="Export project"
+          >
+            <Download className="w-3.5 h-3.5" />
+          </button>
+
+          {exportMenuOpen && (
+            <>
+              <div
+                className="fixed inset-0 z-30"
+                onClick={() => setExportMenuOpen(false)}
+              />
+              <div className="absolute right-0 mt-1 w-52 bg-white dark:bg-navy-850 border border-slate-200 dark:border-navy-700 rounded-xl shadow-2xl z-40 p-1 animate-slide-up text-xs">
+                <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Export Options
+                </div>
+
+                {isHtml && onExportZip && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setExportMenuOpen(false);
+                      onExportZip();
+                    }}
+                    className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left hover:bg-slate-100 dark:hover:bg-navy-800 text-brand-600 dark:text-brand-400 font-semibold transition-colors"
+                  >
+                    <Archive className="w-4 h-4 text-brand-500 shrink-0" />
+                    <div className="flex-1">
+                      <div>Download ZIP</div>
+                      <div className="text-[10px] text-slate-400 font-normal">Bundled with HTML, CSS & JS</div>
+                    </div>
+                  </button>
+                )}
+
+                {isHtml && onExportFile && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setExportMenuOpen(false);
+                        onExportFile("html");
+                      }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left hover:bg-slate-100 dark:hover:bg-navy-800 text-slate-700 dark:text-slate-300 transition-colors"
+                    >
+                      <FileCode className="w-3.5 h-3.5 text-orange-500" />
+                      <span>Download index.html</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setExportMenuOpen(false);
+                        onExportFile("css");
+                      }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left hover:bg-slate-100 dark:hover:bg-navy-800 text-slate-700 dark:text-slate-300 transition-colors"
+                    >
+                      <FileCode className="w-3.5 h-3.5 text-sky-500" />
+                      <span>Download style.css</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setExportMenuOpen(false);
+                        onExportFile("js");
+                      }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left hover:bg-slate-100 dark:hover:bg-navy-800 text-slate-700 dark:text-slate-300 transition-colors"
+                    >
+                      <FileCode className="w-3.5 h-3.5 text-yellow-500" />
+                      <span>Download script.js</span>
+                    </button>
+                    <div className="my-1 border-t border-slate-200 dark:border-navy-700" />
+                  </>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setExportMenuOpen(false);
+                    onExport();
+                  }}
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left hover:bg-slate-100 dark:hover:bg-navy-800 text-slate-700 dark:text-slate-300 transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Export Project JSON</span>
+                </button>
+              </div>
+            </>
+          )}
+        </div>
 
         {/* Import JSON */}
         <label
@@ -235,7 +440,38 @@ export function TopToolbar({
         </button>
       </div>
 
-      {/* Execution Modal Notice for Step 5 */}
+      {/* Template Confirmation Modal */}
+      {pendingTemplateId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-navy-850 border border-slate-200 dark:border-navy-700 rounded-2xl p-6 max-w-sm w-full shadow-2xl text-xs space-y-4">
+            <div className="flex items-center gap-2.5 text-amber-500 font-bold text-sm">
+              <LayoutTemplate className="w-5 h-5 text-amber-500" />
+              <span>Load Starter Template?</span>
+            </div>
+            <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-xs">
+              Loading this template will replace your current files in this project with the template files. Unsaved modifications will be overwritten.
+            </p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setPendingTemplateId(null)}
+                className="px-3.5 py-1.5 rounded-lg border border-slate-300 dark:border-navy-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-navy-800 font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmTemplate}
+                className="px-4 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-semibold transition-colors"
+              >
+                Replace Code
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Execution Modal Notice for other tools (Step 5 Status) */}
       {showExecutionNotice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="bg-white dark:bg-navy-850 border border-slate-200 dark:border-navy-700 rounded-2xl p-6 max-w-lg w-full shadow-2xl text-xs space-y-4">
