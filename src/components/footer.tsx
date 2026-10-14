@@ -23,7 +23,7 @@ export function Footer() {
             Our mission is to eliminate setup friction for developers, students, and educators worldwide with an accessible, high-performance web interface.
           </p>
           <div className="p-3 rounded-xl bg-slate-100 dark:bg-navy-900 border border-slate-200 dark:border-navy-750 text-xs">
-            <strong>Release Status:</strong> Step 2 — Advanced Navigation, Smart Search &amp; Tool Discovery.
+            <strong>Platform Status:</strong> Live Monaco IDE, HTML/CSS/JS Playground &amp; Cloud Architecture.
           </div>
         </div>
       ),
@@ -36,7 +36,7 @@ export function Footer() {
       content: (
         <div className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
           <p>
-            Have feedback on the Step 2 UI/UX design or questions about upcoming compiler integrations?
+            Have feedback on the UI/UX design or questions about platform integrations?
           </p>
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-navy-900 border border-slate-200 dark:border-navy-750 space-y-2">
             <div className="flex items-center gap-2 text-xs">
@@ -59,12 +59,12 @@ export function Footer() {
       content: (
         <div className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
           <p>
-            At OneCompilerHub, your privacy is paramount. In this Step 2 release:
+            At OneCompilerHub, your privacy is paramount:
           </p>
           <ul className="list-disc pl-5 space-y-1 text-xs">
-            <li>We do not collect or transmit private personal identifiable information (PII).</li>
-            <li>Code entered into the Monaco editor remains strictly local within your browser session memory.</li>
-            <li>No persistent analytics tracking cookies or telemetry beacons are injected.</li>
+            <li>We do not sell personal identifiable information (PII).</li>
+            <li>Code entered into the Monaco editor is stored securely in your browser&apos;s IndexedDB storage.</li>
+            <li>Authentication is securely managed by industry-standard Supabase Auth.</li>
           </ul>
         </div>
       ),
@@ -80,8 +80,8 @@ export function Footer() {
             Welcome to OneCompilerHub. By accessing our platform, you acknowledge that:
           </p>
           <ul className="list-disc pl-5 space-y-1 text-xs">
-            <li>Step 2 constitutes a frontend layout &amp; discovery prototype; code execution is simulated.</li>
-            <li>Users agree not to misuse playground containers or attempt unauthorized penetration testing.</li>
+            <li>Users agree to write ethical code and not misuse playground environments.</li>
+            <li>Client-side HTML/CSS/JS code runs within an isolated sandbox iframe.</li>
             <li>All product names and logos are trademarks of their respective owners.</li>
           </ul>
         </div>
@@ -101,7 +101,7 @@ export function Footer() {
                 OneCompilerHub is a modern, responsive online coding playground where developers, students, and educators write and explore 18 programming environments.
               </p>
               <div className="text-[11px] font-mono text-slate-400 dark:text-slate-500">
-                Frontend UI &amp; Discovery Foundation • Step 2
+                Online Developer Workspace • v1.1.0
               </div>
             </div>
 

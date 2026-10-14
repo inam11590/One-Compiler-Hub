@@ -20,9 +20,9 @@ export function HowItWorks() {
     {
       stepNumber: "03",
       icon: <PlayCircle className="w-6 h-6 text-emerald-500" />,
-      title: "Run It When the Compiler Becomes Available",
+      title: "Live Preview & Experiment",
       description:
-        "In Step 1, preview layouts with simulated runs. Full cloud compiler sandboxes and containerized runtimes arrive in Step 2.",
+        "Instantly test web interfaces with live HTML, CSS & JavaScript preview, or write, organize, and export multi-file projects locally in your browser.",
     },
   ];
 

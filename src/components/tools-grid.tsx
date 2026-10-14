@@ -74,7 +74,7 @@ export function ToolsGrid({ onSelectToolForWorkspace, activeCategoryFilter }: To
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
-            <span>Step 2 Tool Catalog &amp; Discovery</span>
+            <span>18 Developer Environments &amp; Tools</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             Comprehensive Coding Ecosystem
@@ -195,9 +195,15 @@ export function ToolsGrid({ onSelectToolForWorkspace, activeCategoryFilter }: To
                           Popular
                         </span>
                       )}
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                        Demo Ready
-                      </span>
+                      {tool.slug === "html" ? (
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                          Live Preview
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-navy-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-navy-700">
+                          Workspace Ready
+                        </span>
+                      )}
                       <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-slate-100 dark:bg-navy-750 text-slate-500 dark:text-slate-400">
                         .{tool.fileExtension}
                       </span>

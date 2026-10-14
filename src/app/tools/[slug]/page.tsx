@@ -125,7 +125,7 @@ export default function ToolPage({ params }: ToolPageProps) {
                       {tool.category}
                     </span>
                     <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                      Demo Workspace Active
+                      Workspace Ready
                     </span>
                     <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-navy-800 text-slate-500 dark:text-slate-400">
                       .{tool.fileExtension}
@@ -192,13 +192,13 @@ export default function ToolPage({ params }: ToolPageProps) {
                 ))}
               </div>
 
-              {/* Step 2 Roadmap Callout */}
-              <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-3">
-                <Clock className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+              {/* Workspace Environment Callout */}
+              <div className="p-4 rounded-xl bg-slate-100 dark:bg-navy-800 border border-slate-200 dark:border-navy-700 text-xs text-slate-700 dark:text-slate-300 flex items-start gap-3">
+                <Clock className="w-5 h-5 text-brand-500 shrink-0 mt-0.5" />
                 <div>
-                  <div className="font-bold mb-0.5">Execution Status: Frontend Sandbox</div>
+                  <div className="font-bold mb-0.5">Workspace Status: Browser Environment</div>
                   <p className="leading-relaxed">
-                    You can test code syntax and formatting in the Monaco editor below. Isolated containerized compilers for <strong>{tool.name}</strong> will be implemented in Step 3.
+                    You can edit, organize, and inspect <strong>{tool.name}</strong> code with full syntax highlighting, starter templates, and project persistence in the Monaco workspace below.
                   </p>
                 </div>
               </div>

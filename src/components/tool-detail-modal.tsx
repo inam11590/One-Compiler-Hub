@@ -70,14 +70,14 @@ export function ToolDetailModal({
           {tool.longDescription}
         </p>
 
-        {/* Coming Soon Notice */}
+        {/* Workspace Environment Notice */}
         <div className="p-4 rounded-xl bg-slate-50 dark:bg-navy-900 border border-slate-200 dark:border-navy-750 mb-6 space-y-2">
           <div className="flex items-center gap-2 text-xs font-semibold text-brand-600 dark:text-brand-400">
             <Clock className="w-4 h-4" />
-            <span>Compiler Engine Status: Step 2 Discovery / Step 3 Sandbox</span>
+            <span>Interactive Workspace Environment</span>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-            Real compiler execution containers for <strong>{tool.name}</strong> will be connected in Step 3. You can explore the starter template and syntax highlighting in our interactive demo workspace right now.
+            Write, edit, and organize <strong>{tool.name}</strong> code with syntax highlighting, starter templates, and multi-file editing directly in your browser workspace.
           </p>
         </div>
 

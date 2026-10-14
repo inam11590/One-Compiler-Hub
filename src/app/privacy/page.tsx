@@ -25,7 +25,7 @@ export default function PrivacyPage() {
           <section className="space-y-3 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">1. Information We Collect</h2>
             <p>
-              When you register for an account, we collect your email address, display name, and optional profile metadata (such as bio and avatar). Workspace code files in Step 3 are stored strictly in your local browser storage (IndexedDB) unless explicitly submitted.
+              When you register for an account, we collect your email address, display name, and optional profile metadata (such as bio and avatar). Workspace code files are stored strictly in your local browser storage (IndexedDB) unless explicitly submitted.
             </p>
           </section>
 

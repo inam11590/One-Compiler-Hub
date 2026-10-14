@@ -18,9 +18,9 @@ export function FAQ() {
         "OneCompilerHub is an online coding platform and developer playground designed to allow developers, students, and engineers to write, inspect, and practice code across 18 modern programming languages, web stacks, and databases directly in their browser.",
     },
     {
-      question: "Does OneCompilerHub execute code in this Step 2 release?",
+      question: "Can I run and test code in OneCompilerHub?",
       answer:
-        "Step 2 delivers advanced navigation, smart keyword/alias search, dedicated dynamic tool documentation pages, and curated tool discovery. All code execution remains strictly simulated UI demo mode. Real backend compiler containers and execution servers will be introduced in Step 3.",
+        "Yes! You can write, preview, and interactively test HTML, CSS & JavaScript in real time inside our secure client-side sandbox playground. For backend compiled and interpreted languages (such as Python, Java, and C++), our FastAPI execution architecture and hardened sandbox specifications have been established as we prepare dedicated microVM workers.",
     },
     {
       question: "Which 18 programming languages and frameworks are supported?",
