@@ -628,7 +628,7 @@ export function CodeWorkspace({
         stdin: stdinInput.trim() ? stdinInput : undefined,
       });
 
-      activeJobIdRef.current = res.execution_id;
+      activeJobIdRef.current = res.execution_id || res.id || null;
 
       if (res.status === "completed") {
         setOutputState("completed");
@@ -698,18 +698,41 @@ export function CodeWorkspace({
       const errorMessage = err instanceof Error ? err.message : String(err);
 
       if (errorCode === "network_error") {
-        setOutputContent(
-          "OneCompilerHub Execution Service Status:\n\n" +
-          "Unable to connect to the execution backend at " +
-          (process.env.NEXT_PUBLIC_EXECUTION_API_URL || "http://localhost:8000") +
-          ".\n\n" +
-          "To test Python code execution locally:\n" +
-          "1. Open a terminal in the 'backend/' directory\n" +
-          "2. Activate the virtual environment: source venv/bin/activate\n" +
-          "3. Run the API: uvicorn app.main:app --port 8000\n" +
-          "4. Enable execution in backend/.env: EXECUTION_ENABLED=true\n\n" +
-          "Production sandbox isolation guard is active."
-        );
+        const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+        const apiUrl = process.env.NEXT_PUBLIC_EXECUTION_API_URL || "http://localhost:8000";
+        const isLocalUrl = apiUrl.includes("localhost") || apiUrl.includes("127.0.0.1");
+
+        let guidance = "";
+        if (isHttps && isLocalUrl) {
+          guidance =
+            "Deployment Diagnostic:\n" +
+            "You are viewing OneCompilerHub over HTTPS on Vercel, but the frontend is configured with local API URL (" +
+            apiUrl +
+            ").\n\n" +
+            "Web browsers block HTTPS-to-HTTP connections due to Mixed Content security controls.\n\n" +
+            "To connect production execution:\n" +
+            "1. Deploy the FastAPI service ('backend/' directory) to a host supporting Python 3 and OS process isolation (e.g., Render, Railway, Fly.io, or VPS).\n" +
+            "2. In your Vercel Project Settings > Environment Variables, configure:\n" +
+            "   NEXT_PUBLIC_EXECUTION_API_URL=https://your-backend-api.com\n" +
+            "3. Redeploy your Vercel project.\n\n" +
+            "To test real Python execution locally right now:\n" +
+            "1. Run Next.js locally: npm run dev (http://localhost:3000)\n" +
+            "2. Run FastAPI backend: cd backend && source venv/bin/activate && uvicorn app.main:app --port 8000\n" +
+            "3. Ensure backend/.env contains: EXECUTION_ENABLED=true";
+        } else {
+          guidance =
+            "Unable to connect to the execution backend at " +
+            apiUrl +
+            ".\n\n" +
+            "To run the local backend:\n" +
+            "1. Open a terminal in the 'backend/' directory\n" +
+            "2. Activate the virtual environment: source venv/bin/activate\n" +
+            "3. Start the API: uvicorn app.main:app --port 8000\n" +
+            "4. Verify backend/.env contains: EXECUTION_ENABLED=true\n\n" +
+            "Production sandbox isolation guard is active.";
+        }
+
+        setOutputContent("OneCompilerHub Execution Service Status:\n\n" + guidance);
         showToast("Backend execution service is offline.");
       } else if (errorStatus === 503) {
         setOutputContent(

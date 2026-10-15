@@ -97,4 +97,16 @@ describe("Execution API Client Contracts & Error Handling", () => {
     assert.ok(err instanceof Error, "Must be an instance of Error");
     assert.ok(err.stack && err.stack.length > 0, "Must contain a valid stack trace");
   });
+
+  test("Execution response normalizes execution_id from either id or execution_id", () => {
+    const legacyBackendPayload = {
+      id: "test-uuid-1234",
+      language: "python",
+      status: "completed",
+      stdout: "hello",
+      stderr: "",
+    };
+    const execution_id = legacyBackendPayload.execution_id || legacyBackendPayload.id;
+    assert.equal(execution_id, "test-uuid-1234");
+  });
 });

@@ -181,6 +181,7 @@ class ExecutionService:
     def _to_response(self, job: ExecutionJob) -> ExecutionResponse:
         return ExecutionResponse(
             id=job.id,
+            execution_id=job.id,
             language=job.language,
             status=job.status,
             source_code=job.source_code,

@@ -66,6 +66,7 @@ export interface ExecutionCreateRequest {
 }
 
 export interface ExecutionResponse {
+  id?: string;
   execution_id: string;
   language: string;
   status: ExecutionStatus;
@@ -99,6 +100,24 @@ export class ExecutionApiError extends Error {
 
 const BACKEND_BASE_URL =
   process.env.NEXT_PUBLIC_EXECUTION_API_URL || "http://localhost:8000";
+
+/**
+ * Resolves optional bearer token from Supabase session if signed in.
+ */
+async function resolveAuthToken(explicitToken?: string): Promise<string | undefined> {
+  if (explicitToken) return explicitToken;
+  try {
+    if (typeof window !== "undefined") {
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+      const { data } = await supabase.auth.getSession();
+      return data.session?.access_token;
+    }
+  } catch {
+    // ignore
+  }
+  return undefined;
+}
 
 /**
  * Checks backend health and isolation readiness.
@@ -135,18 +154,18 @@ export async function listSupportedLanguages(): Promise<LanguageListResponse | n
 
 /**
  * Submits source code to the execution backend.
- * In Step 5, this endpoint returns 503 feature_unavailable.
  */
 export async function submitExecution(
   payload: ExecutionCreateRequest,
   token?: string
 ): Promise<ExecutionResponse> {
+  const authToken = await resolveAuthToken(token);
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     Accept: "application/json",
   };
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
+  if (authToken) {
+    headers.Authorization = `Bearer ${authToken}`;
   }
 
   let res: Response;
@@ -156,10 +175,11 @@ export async function submitExecution(
       headers,
       body: JSON.stringify(payload),
     });
-  } catch {
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : "Network error";
     throw new ExecutionApiError(
       "network_error",
-      "Unable to connect to OneCompilerHub execution backend.",
+      `Unable to connect to OneCompilerHub execution backend at ${BACKEND_BASE_URL}. (${errorMsg})`,
       0
     );
   }
@@ -170,12 +190,18 @@ export async function submitExecution(
     const errorDetail = data?.error;
     throw new ExecutionApiError(
       errorDetail?.code || "request_failed",
-      errorDetail?.message || "Execution request failed.",
+      errorDetail?.message || data?.detail || "Execution request failed.",
       res.status
     );
   }
 
-  return data as ExecutionResponse;
+  const execution_id = data.execution_id || data.id;
+
+  return {
+    ...data,
+    id: data.id || execution_id,
+    execution_id,
+  } as ExecutionResponse;
 }
 
 /**
@@ -185,11 +211,12 @@ export async function getExecutionStatus(
   executionId: string,
   token?: string
 ): Promise<ExecutionResponse> {
+  const authToken = await resolveAuthToken(token);
   const headers: Record<string, string> = {
     Accept: "application/json",
   };
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
+  if (authToken) {
+    headers.Authorization = `Bearer ${authToken}`;
   }
 
   const res = await fetch(`${BACKEND_BASE_URL}/api/v1/executions/${executionId}`, {
@@ -202,12 +229,18 @@ export async function getExecutionStatus(
     const errorDetail = data?.error;
     throw new ExecutionApiError(
       errorDetail?.code || "request_failed",
-      errorDetail?.message || "Failed to fetch execution status.",
+      errorDetail?.message || data?.detail || "Failed to fetch execution status.",
       res.status
     );
   }
 
-  return data as ExecutionResponse;
+  const resolvedId = data.execution_id || data.id || executionId;
+
+  return {
+    ...data,
+    id: data.id || resolvedId,
+    execution_id: resolvedId,
+  } as ExecutionResponse;
 }
 
 /**
@@ -217,11 +250,12 @@ export async function cancelExecution(
   executionId: string,
   token?: string
 ): Promise<{ execution_id: string; cancelled: boolean; message: string }> {
+  const authToken = await resolveAuthToken(token);
   const headers: Record<string, string> = {
     Accept: "application/json",
   };
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
+  if (authToken) {
+    headers.Authorization = `Bearer ${authToken}`;
   }
 
   const res = await fetch(
@@ -237,10 +271,14 @@ export async function cancelExecution(
     const errorDetail = data?.error;
     throw new ExecutionApiError(
       errorDetail?.code || "cancel_failed",
-      errorDetail?.message || "Failed to cancel execution.",
+      errorDetail?.message || data?.detail || "Failed to cancel execution.",
       res.status
     );
   }
 
-  return data;
+  return {
+    execution_id: data.execution_id || data.id || executionId,
+    cancelled: true,
+    message: data.message || "Execution cancelled",
+  };
 }

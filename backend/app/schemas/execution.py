@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from app.core.constants import (
     ExecutionStatus,
     MAX_SOURCE_CODE_BYTES,
@@ -53,6 +53,7 @@ class ExecutionCreateRequest(BaseModel):
 
 class ExecutionResponse(BaseModel):
     id: str = Field(..., description="Unique UUID for this execution job")
+    execution_id: Optional[str] = Field(default=None, description="Client compatibility alias for id")
     language: str
     status: ExecutionStatus
     source_code: str
@@ -68,8 +69,21 @@ class ExecutionResponse(BaseModel):
     client_request_id: Optional[str] = None
     is_sandboxed: bool = True
 
+    @model_validator(mode="after")
+    def populate_execution_id(self) -> "ExecutionResponse":
+        if not self.execution_id:
+            self.execution_id = self.id
+        return self
+
 
 class ExecutionCancelResponse(BaseModel):
     id: str
+    execution_id: Optional[str] = Field(default=None, description="Client compatibility alias for id")
     status: ExecutionStatus
     message: str
+
+    @model_validator(mode="after")
+    def populate_execution_id(self) -> "ExecutionCancelResponse":
+        if not self.execution_id:
+            self.execution_id = self.id
+        return self
