@@ -27,12 +27,15 @@ import { FileExplorer } from "./file-explorer";
 import { EditorTabs } from "./editor-tabs";
 import { OutputPanel } from "./output-panel";
 import { StatusBar } from "./status-bar";
-import { SettingsModal } from "./settings-modal";
 import { PreviewPanel } from "./preview-panel";
 import { ConsolePanel } from "./console-panel";
 import { ConsoleLogEntry } from "@/types/preview";
 import { HTML_STARTER_TEMPLATES } from "@/lib/preview/templates";
-import { createZipArchive, downloadFile } from "@/lib/zip";
+
+const SettingsModal = dynamic(
+  () => import("./settings-modal").then((m) => m.SettingsModal),
+  { ssr: false }
+);
 
 // Dynamic Monaco Editor to prevent Next.js SSR window access
 const Editor = dynamic(() => import("@monaco-editor/react"), {
@@ -122,11 +125,35 @@ export function CodeWorkspace({
     };
   }, [currentTool.slug]);
 
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const cursorListenerRef = useRef<{ dispose: () => void } | null>(null);
+
   // Persist project changes debounced
-  const persistProject = useCallback(async (proj: WorkspaceProject) => {
-    setIsSaving(true);
-    await saveProject(proj);
-    setTimeout(() => setIsSaving(false), 300);
+  const persistProject = useCallback((proj: WorkspaceProject, debounceMs = 750) => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    if (debounceMs === 0) {
+      setIsSaving(true);
+      saveProject(proj).then(() => {
+        setTimeout(() => setIsSaving(false), 200);
+      });
+      return;
+    }
+    saveTimeoutRef.current = setTimeout(async () => {
+      setIsSaving(true);
+      await saveProject(proj);
+      setTimeout(() => setIsSaving(false), 200);
+    }, debounceMs);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      if (cursorListenerRef.current?.dispose) {
+        cursorListenerRef.current.dispose();
+      }
+    };
   }, []);
 
   // Active File Reference
@@ -355,7 +382,8 @@ export function CodeWorkspace({
   };
 
   // Export ZIP archive
-  const handleExportZip = () => {
+  const handleExportZip = async () => {
+    const { createZipArchive, downloadFile } = await import("@/lib/zip");
     const zipFiles = project.files
       .filter((f) => !f.isFolder)
       .map((f) => ({
@@ -370,21 +398,22 @@ export function CodeWorkspace({
   };
 
   // Export individual file
-  const handleExportFile = (ext: "html" | "css" | "js") => {
+  const handleExportFile = async (ext: "html" | "css" | "js") => {
     const targetName = ext === "html" ? "index.html" : ext === "css" ? "style.css" : "script.js";
     const file = project.files.find((f) => f.name === targetName);
     if (!file) {
       showToast(`File ${targetName} not found in project`);
       return;
     }
+    const { downloadFile } = await import("@/lib/zip");
     const mimeType = ext === "html" ? "text/html" : ext === "css" ? "text/css" : "text/javascript";
     downloadFile(file.content, file.name, mimeType);
     showToast(`Downloaded ${file.name}`);
   };
 
-  // Live log receiver (max buffer 200)
+  // Live log receiver (max buffer 100)
   const handleLogReceived = useCallback((entry: ConsoleLogEntry) => {
-    setConsoleLogs((prev) => [entry, ...prev].slice(0, 200));
+    setConsoleLogs((prev) => [entry, ...prev].slice(0, 100));
   }, []);
 
   const handleClearLogs = useCallback(() => {
@@ -395,6 +424,25 @@ export function CodeWorkspace({
     setPreviewKey((k) => k + 1);
     showToast("Live preview reloaded");
   }, []);
+
+  const handleEditorMount = useCallback(
+    (editor: {
+      onDidChangeCursorPosition: (
+        listener: (e: { position: { lineNumber: number; column: number } }) => void
+      ) => { dispose: () => void };
+    }) => {
+      if (cursorListenerRef.current?.dispose) {
+        cursorListenerRef.current.dispose();
+      }
+      cursorListenerRef.current = editor.onDidChangeCursorPosition((e) => {
+        setCursorPosition({
+          line: e.position.lineNumber,
+          column: e.position.column,
+        });
+      });
+    },
+    []
+  );
 
   // Settings update
   const handleUpdateSettings = (partial: Partial<EditorSettings>) => {
@@ -616,14 +664,7 @@ export function CodeWorkspace({
                     value={activeFile.content}
                     theme={monacoTheme}
                     onChange={handleContentChange}
-                    onMount={(editor) => {
-                      editor.onDidChangeCursorPosition((e) => {
-                        setCursorPosition({
-                          line: e.position.lineNumber,
-                          column: e.position.column,
-                        });
-                      });
-                    }}
+                    onMount={handleEditorMount}
                     options={{
                       fontSize: settings.fontSize,
                       tabSize: settings.tabSize,
@@ -706,14 +747,7 @@ export function CodeWorkspace({
                     value={activeFile.content}
                     theme={monacoTheme}
                     onChange={handleContentChange}
-                    onMount={(editor) => {
-                      editor.onDidChangeCursorPosition((e) => {
-                        setCursorPosition({
-                          line: e.position.lineNumber,
-                          column: e.position.column,
-                        });
-                      });
-                    }}
+                    onMount={handleEditorMount}
                     options={{
                       fontSize: settings.fontSize,
                       tabSize: settings.tabSize,

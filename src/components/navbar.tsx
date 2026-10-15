@@ -13,12 +13,17 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { SearchDialog } from "@/components/search-dialog";
 import { ProgrammingTool, ToolCategory } from "@/types";
 import { ToolIcon } from "@/components/tool-icons";
 import { useAuth } from "@/components/auth/auth-provider";
+
+const SearchDialog = dynamic(
+  () => import("@/components/search-dialog").then((m) => m.SearchDialog),
+  { ssr: false }
+);
 
 interface NavbarProps {
   onSelectTool?: (tool: ProgrammingTool) => void;
@@ -470,13 +475,15 @@ export function Navbar({ onSelectTool, onFilterCategory }: NavbarProps) {
       </header>
 
       {/* Search Modal */}
-      <SearchDialog
-        isOpen={searchOpen}
-        onClose={() => setSearchOpen(false)}
-        onSelectTool={(tool) => {
-          if (onSelectTool) onSelectTool(tool);
-        }}
-      />
+      {searchOpen && (
+        <SearchDialog
+          isOpen={searchOpen}
+          onClose={() => setSearchOpen(false)}
+          onSelectTool={(tool) => {
+            if (onSelectTool) onSelectTool(tool);
+          }}
+        />
+      )}
     </>
   );
 }

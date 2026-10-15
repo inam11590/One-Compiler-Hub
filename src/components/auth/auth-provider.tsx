@@ -27,10 +27,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = React.useMemo(() => createClient(), []);
+  const lastFetchedUserId = React.useRef<string | null>(null);
 
   const fetchProfile = useCallback(
-    async (userId: string) => {
+    async (userId: string, force = false) => {
+      if (!force && lastFetchedUserId.current === userId) {
+        return;
+      }
+      lastFetchedUserId.current = userId;
       try {
         const { data, error } = await supabase
           .from("profiles")
@@ -50,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshProfile = useCallback(async () => {
     if (user?.id) {
-      await fetchProfile(user.id);
+      await fetchProfile(user.id, true);
     }
   }, [user, fetchProfile]);
 
@@ -83,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!mounted) return;
 
       if (session?.user) {
@@ -104,6 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     setIsLoading(true);
+    lastFetchedUserId.current = null;
     await supabase.auth.signOut();
     setUser(null);
     setProfile(null);

@@ -61,16 +61,31 @@ export function PreviewPanel({
     }, 250);
   }, [html, css, js]);
 
+  const lastRenderedCodeRef = useRef<{ html: string; css: string; js: string }>({
+    html: "",
+    css: "",
+    js: "",
+  });
+
   // Initial and auto-refresh trigger (debounced by 450ms)
   useEffect(() => {
-    if (!autoRefresh && assembledHtml) return;
+    if (!autoRefresh && lastRenderedCodeRef.current.html) return;
+
+    if (
+      lastRenderedCodeRef.current.html === html &&
+      lastRenderedCodeRef.current.css === css &&
+      lastRenderedCodeRef.current.js === js
+    ) {
+      return;
+    }
 
     const timer = setTimeout(() => {
+      lastRenderedCodeRef.current = { html, css, js };
       renderPreview();
     }, 450);
 
     return () => clearTimeout(timer);
-  }, [html, css, js, autoRefresh, assembledHtml, renderPreview]);
+  }, [html, css, js, autoRefresh, renderPreview]);
 
   // Safe PostMessage Bridge Listener
   useEffect(() => {
