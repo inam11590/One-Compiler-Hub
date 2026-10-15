@@ -3,9 +3,21 @@ import type { Metadata } from "next";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 
+import { getCanonicalUrl, SITE_NAME } from "@/lib/seo";
+
 export const metadata: Metadata = {
   title: "Terms of Service — OneCompilerHub",
   description: "Terms and conditions for using OneCompilerHub online compiler and developer playground.",
+  alternates: {
+    canonical: getCanonicalUrl("/terms"),
+  },
+  openGraph: {
+    title: "Terms of Service — OneCompilerHub",
+    description: "Terms and conditions for using OneCompilerHub online compiler and developer playground.",
+    url: getCanonicalUrl("/terms"),
+    siteName: SITE_NAME,
+    type: "website",
+  },
 };
 
 export default function TermsPage() {

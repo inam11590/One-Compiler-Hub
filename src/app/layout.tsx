@@ -3,6 +3,16 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/components/auth/auth-provider";
+import {
+  SITE_URL,
+  SITE_NAME,
+  SITE_DEFAULT_TITLE,
+  SITE_DEFAULT_DESCRIPTION,
+  SITE_DEFAULT_KEYWORDS,
+  getWebSiteJsonLd,
+  getOrganizationJsonLd,
+  getSoftwareApplicationJsonLd,
+} from "@/lib/seo";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -11,6 +21,7 @@ const geistSans = localFont({
   display: "swap",
   preload: true,
 });
+
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
@@ -20,36 +31,50 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "OneCompilerHub — Online Programming Compiler & Developer Playground",
-  description:
-    "Write, experiment, and explore 18 programming languages, web stacks, and databases in one modern, browser-based developer workspace.",
-  keywords: [
-    "online compiler",
-    "developer playground",
-    "code editor",
-    "Python",
-    "JavaScript",
-    "HTML",
-    "Java",
-    "C++",
-    "FastAPI",
-    "Monaco Editor",
-    "OneCompilerHub",
-  ],
-  authors: [{ name: "OneCompilerHub Team" }],
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_DEFAULT_TITLE,
+    template: `%s — ${SITE_NAME}`,
+  },
+  description: SITE_DEFAULT_DESCRIPTION,
+  keywords: SITE_DEFAULT_KEYWORDS,
+  authors: [{ name: "OneCompilerHub Team", url: SITE_URL }],
+  creator: "OneCompilerHub",
+  publisher: "OneCompilerHub",
+  applicationName: "OneCompilerHub",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: SITE_URL,
+  },
   openGraph: {
-    title: "OneCompilerHub — Online Programming Compiler & Developer Playground",
-    description:
-      "Write, experiment, and explore 18 programming languages, web stacks, and databases in one modern online coding workspace.",
-    type: "website",
+    title: SITE_DEFAULT_TITLE,
+    description: SITE_DEFAULT_DESCRIPTION,
+    url: SITE_URL,
+    siteName: SITE_NAME,
     locale: "en_US",
-    siteName: "OneCompilerHub",
+    type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "OneCompilerHub — Online Programming Compiler & Developer Playground",
-    description:
-      "Write, experiment, and explore 18 programming languages in one modern developer workspace.",
+    title: SITE_DEFAULT_TITLE,
+    description: SITE_DEFAULT_DESCRIPTION,
+    creator: "@OneCompilerHub",
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+    other: {
+      "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION || "",
+    },
   },
 };
 
@@ -68,8 +93,32 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const websiteSchema = getWebSiteJsonLd();
+  const organizationSchema = getOrganizationJsonLd();
+  const softwareSchema = getSoftwareApplicationJsonLd();
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(websiteSchema),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationSchema),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(softwareSchema),
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased min-h-screen bg-white dark:bg-navy-900 text-slate-900 dark:text-slate-100 selection:bg-brand-500/20 selection:text-brand-600 dark:selection:text-brand-300`}
       >

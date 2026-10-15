@@ -53,41 +53,7 @@ export function Footer() {
     });
   };
 
-  const openPrivacy = () => {
-    setModalContent({
-      title: "Privacy Policy",
-      content: (
-        <div className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
-          <p>
-            At OneCompilerHub, your privacy is paramount:
-          </p>
-          <ul className="list-disc pl-5 space-y-1 text-xs">
-            <li>We do not sell personal identifiable information (PII).</li>
-            <li>Code entered into the Monaco editor is stored securely in your browser&apos;s IndexedDB storage.</li>
-            <li>Authentication is securely managed by industry-standard Supabase Auth.</li>
-          </ul>
-        </div>
-      ),
-    });
-  };
 
-  const openTerms = () => {
-    setModalContent({
-      title: "Terms of Service",
-      content: (
-        <div className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
-          <p>
-            Welcome to OneCompilerHub. By accessing our platform, you acknowledge that:
-          </p>
-          <ul className="list-disc pl-5 space-y-1 text-xs">
-            <li>Users agree to write ethical code and not misuse playground environments.</li>
-            <li>Client-side HTML/CSS/JS code runs within an isolated sandbox iframe.</li>
-            <li>All product names and logos are trademarks of their respective owners.</li>
-          </ul>
-        </div>
-      ),
-    });
-  };
 
   return (
     <>
@@ -164,22 +130,20 @@ export function Footer() {
                   </button>
                 </li>
                 <li>
-                  <button
-                    type="button"
-                    onClick={openPrivacy}
-                    className="hover:text-brand-500 transition-colors text-left"
+                  <Link
+                    href="/privacy"
+                    className="hover:text-brand-500 transition-colors"
                   >
                     Privacy Policy
-                  </button>
+                  </Link>
                 </li>
                 <li>
-                  <button
-                    type="button"
-                    onClick={openTerms}
-                    className="hover:text-brand-500 transition-colors text-left"
+                  <Link
+                    href="/terms"
+                    className="hover:text-brand-500 transition-colors"
                   >
                     Terms of Service
-                  </button>
+                  </Link>
                 </li>
               </ul>
             </div>

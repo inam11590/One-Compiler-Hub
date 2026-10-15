@@ -3,9 +3,21 @@ import type { Metadata } from "next";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 
+import { getCanonicalUrl, SITE_NAME } from "@/lib/seo";
+
 export const metadata: Metadata = {
   title: "Privacy Policy — OneCompilerHub",
   description: "Privacy policy and data handling practices of OneCompilerHub.",
+  alternates: {
+    canonical: getCanonicalUrl("/privacy"),
+  },
+  openGraph: {
+    title: "Privacy Policy — OneCompilerHub",
+    description: "Privacy policy and data handling practices of OneCompilerHub.",
+    url: getCanonicalUrl("/privacy"),
+    siteName: SITE_NAME,
+    type: "website",
+  },
 };
 
 export default function PrivacyPage() {

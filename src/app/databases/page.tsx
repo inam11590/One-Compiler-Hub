@@ -5,19 +5,45 @@ import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ToolsGrid } from "@/components/tools-grid";
+import { getBreadcrumbJsonLd, getCanonicalUrl, SITE_NAME } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Online SQL & NoSQL Database Playgrounds — OneCompilerHub",
   description:
     "Practice and test database queries for MySQL, PostgreSQL, MongoDB, and PL/SQL on OneCompilerHub.",
   alternates: {
-    canonical: "https://one-compiler-hub.vercel.app/databases",
+    canonical: getCanonicalUrl("/databases"),
+  },
+  openGraph: {
+    title: "Online SQL & NoSQL Database Playgrounds — OneCompilerHub",
+    description:
+      "Practice and test database queries for MySQL, PostgreSQL, MongoDB, and PL/SQL on OneCompilerHub.",
+    url: getCanonicalUrl("/databases"),
+    siteName: SITE_NAME,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Online SQL & NoSQL Database Playgrounds — OneCompilerHub",
+    description:
+      "Practice and test database queries for MySQL, PostgreSQL, MongoDB, and PL/SQL on OneCompilerHub.",
   },
 };
 
 export default function DatabasesPage() {
+  const breadcrumbSchema = getBreadcrumbJsonLd([
+    { name: "Home", path: "/" },
+    { name: "Databases", path: "/databases" },
+  ]);
+
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-navy-900 transition-colors">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
       <Navbar />
 
       <main className="flex-1">
@@ -32,21 +58,23 @@ export default function DatabasesPage() {
               <span>Back to Home</span>
             </Link>
 
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 text-xs font-semibold uppercase tracking-wider mb-3">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
               <Database className="w-4 h-4" />
-              <span>Databases</span>
+              <span>Data Systems</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-              Relational &amp; Document Databases
+              Databases &amp; Query Workspaces
             </h1>
-            <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
-              Explore SQL queries, database indexing, stored procedures, and document schemas across MySQL, PostgreSQL, MongoDB, and PL/SQL.
+            <p className="mt-2 text-base text-slate-600 dark:text-slate-300 max-w-2xl">
+              Write relational SQL schemas and NoSQL queries for MySQL, PostgreSQL, MongoDB, and Oracle PL/SQL.
             </p>
           </div>
         </section>
 
-        {/* Filtered Tools Grid pre-filtered to "database" */}
-        <ToolsGrid activeCategoryFilter="database" />
+        {/* Tools Section */}
+        <section className="py-12">
+          <ToolsGrid selectedCategory="database" />
+        </section>
       </main>
 
       <Footer />

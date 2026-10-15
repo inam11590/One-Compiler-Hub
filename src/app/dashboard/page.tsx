@@ -9,6 +9,10 @@ import { DashboardView } from "@/components/dashboard/dashboard-view";
 export const metadata: Metadata = {
   title: "Developer Dashboard — OneCompilerHub",
   description: "View your developer profile, quick access coding workspaces, and recent sessions.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function DashboardPage() {

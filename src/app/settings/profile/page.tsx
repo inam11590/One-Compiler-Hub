@@ -9,6 +9,10 @@ import { ProfileSettingsForm } from "@/components/settings/profile-settings-form
 export const metadata: Metadata = {
   title: "Profile & Account Settings — OneCompilerHub",
   description: "Manage your developer profile, custom handle, avatar, and account security settings.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function ProfileSettingsPage() {

@@ -11,6 +11,7 @@ import {
 import { searchTools } from "@/data/tools";
 import { ToolIcon } from "@/components/tool-icons";
 import { ProgrammingTool, ToolCategory } from "@/types";
+import { trackEvent } from "@/lib/analytics";
 
 interface ToolsGridProps {
   searchQuery?: string;
@@ -154,6 +155,12 @@ export function ToolsGrid({
                     {/* Open in Editor */}
                     <Link
                       href={`/editor/${tool.slug}`}
+                      onClick={() =>
+                        trackEvent("tool_viewed", {
+                          toolSlug: tool.slug,
+                          category: tool.category,
+                        })
+                      }
                       className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg font-semibold bg-brand-500 text-white hover:bg-brand-600 shadow-sm shadow-brand-500/20 active:scale-95 transition-all text-xs"
                       title={`Open ${tool.name} in Playground`}
                     >

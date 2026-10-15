@@ -5,19 +5,45 @@ import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ToolsGrid } from "@/components/tools-grid";
+import { getBreadcrumbJsonLd, getCanonicalUrl, SITE_NAME } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Online Compilers & Languages — OneCompilerHub",
   description:
     "Explore in-browser compilers and interpreters for Python, C++, Java, C#, C, PHP, and Lua on OneCompilerHub.",
   alternates: {
-    canonical: "https://one-compiler-hub.vercel.app/compilers",
+    canonical: getCanonicalUrl("/compilers"),
+  },
+  openGraph: {
+    title: "Online Compilers & Languages — OneCompilerHub",
+    description:
+      "Explore in-browser compilers and interpreters for Python, C++, Java, C#, C, PHP, and Lua on OneCompilerHub.",
+    url: getCanonicalUrl("/compilers"),
+    siteName: SITE_NAME,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Online Compilers & Languages — OneCompilerHub",
+    description:
+      "Explore in-browser compilers and interpreters for Python, C++, Java, C#, C, PHP, and Lua on OneCompilerHub.",
   },
 };
 
 export default function CompilersPage() {
+  const breadcrumbSchema = getBreadcrumbJsonLd([
+    { name: "Home", path: "/" },
+    { name: "Compilers", path: "/compilers" },
+  ]);
+
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-navy-900 transition-colors">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
       <Navbar />
 
       <main className="flex-1">
@@ -39,14 +65,16 @@ export default function CompilersPage() {
             <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Online Compilers &amp; Interpreters
             </h1>
-            <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
-              Compile, write, and test systems code, algorithms, and scripts across C, C++, Python, Java, C#, and Lua.
+            <p className="mt-2 text-base text-slate-600 dark:text-slate-300 max-w-2xl">
+              Write and inspect code in Python, C++, Java, C#, C, and more with our Monaco Editor developer workspace.
             </p>
           </div>
         </section>
 
-        {/* Filtered Tools Grid pre-filtered to "programming" */}
-        <ToolsGrid activeCategoryFilter="programming" />
+        {/* Tools Section */}
+        <section className="py-12">
+          <ToolsGrid selectedCategory="programming" />
+        </section>
       </main>
 
       <Footer />

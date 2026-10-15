@@ -17,6 +17,12 @@ import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ToolIcon } from "@/components/tool-icons";
 import { Workspace } from "@/components/workspace";
+import {
+  TOOL_SEO_MAP,
+  getCanonicalUrl,
+  getBreadcrumbJsonLd,
+  getSoftwareApplicationJsonLd,
+} from "@/lib/seo";
 
 interface ToolPageProps {
   params: {
@@ -39,27 +45,32 @@ export async function generateMetadata({ params }: ToolPageProps): Promise<Metad
     };
   }
 
-  const title = `${tool.name} Online Playground & Docs — OneCompilerHub`;
-  const description = `${tool.shortDescription} Explore features, starter code, and interactive developer workspace for ${tool.name}.`;
-  const canonicalUrl = `https://one-compiler-hub.vercel.app/tools/${tool.slug}`;
+  const seo = TOOL_SEO_MAP[params.slug] || {
+    title: `${tool.name} Online Code Editor & Workspace — OneCompilerHub`,
+    description: `${tool.shortDescription} Explore starter templates and browser workspace for ${tool.name}.`,
+    keywords: tool.searchKeywords,
+  };
+
+  const canonicalUrl = getCanonicalUrl(`/tools/${tool.slug}`);
 
   return {
-    title,
-    description,
+    title: seo.title,
+    description: seo.description,
+    keywords: seo.keywords,
     alternates: {
       canonical: canonicalUrl,
     },
     openGraph: {
-      title,
-      description,
+      title: seo.title,
+      description: seo.description,
       url: canonicalUrl,
       siteName: "OneCompilerHub",
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title,
-      description,
+      title: seo.title,
+      description: seo.description,
     },
   };
 }
@@ -72,15 +83,45 @@ export default function ToolPage({ params }: ToolPageProps) {
 
   const relatedTools = getRelatedTools(tool);
 
+  const categoryHref =
+    tool.category === "web"
+      ? "/web-development"
+      : tool.category === "database"
+      ? "/databases"
+      : "/compilers";
+
+  const breadcrumbSchema = getBreadcrumbJsonLd([
+    { name: "Home", path: "/" },
+    { name: `${tool.category.toUpperCase()} Tools`, path: categoryHref },
+    { name: tool.name, path: `/tools/${tool.slug}` },
+  ]);
+
+  const softwareSchema = getSoftwareApplicationJsonLd(tool.slug);
+
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-navy-900 transition-colors">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(softwareSchema),
+        }}
+      />
       <Navbar />
 
       <main className="flex-1">
         {/* Breadcrumb Navigation */}
         <div className="bg-slate-50 dark:bg-navy-950/70 border-b border-slate-200 dark:border-navy-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
-            <nav className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+            <nav
+              aria-label="Breadcrumb"
+              className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400"
+            >
               <Link
                 href="/"
                 className="hover:text-brand-500 flex items-center gap-1 transition-colors"
@@ -90,7 +131,7 @@ export default function ToolPage({ params }: ToolPageProps) {
               </Link>
               <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
               <Link
-                href="/#tools"
+                href={categoryHref}
                 className="hover:text-brand-500 transition-colors capitalize"
               >
                 {tool.category} Tools

@@ -1,13 +1,38 @@
 import { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/seo";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = "https://one-compiler-hub.vercel.app";
-
   return {
-    rules: {
-      userAgent: "*",
-      allow: "/",
-    },
-    sitemap: `${baseUrl}/sitemap.xml`,
+    rules: [
+      {
+        userAgent: "*",
+        allow: [
+          "/",
+          "/compilers",
+          "/web-development",
+          "/databases",
+          "/explore",
+          "/tools/",
+          "/editor/",
+          "/privacy",
+          "/terms",
+        ],
+        disallow: [
+          "/dashboard",
+          "/dashboard/",
+          "/settings",
+          "/settings/",
+          "/auth",
+          "/auth/",
+          "/api",
+          "/api/",
+          "/login",
+          "/signup",
+          "/forgot-password",
+        ],
+      },
+    ],
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL,
   };
 }

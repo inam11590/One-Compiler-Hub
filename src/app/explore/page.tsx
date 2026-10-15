@@ -20,13 +20,28 @@ import {
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ToolIcon } from "@/components/tool-icons";
+import { getBreadcrumbJsonLd, getCanonicalUrl, SITE_NAME } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Explore Developer Tools & Learning Stacks — OneCompilerHub",
   description:
     "Discover featured languages, popular web stacks, beginner-friendly starting points, and databases curated by our editorial team.",
   alternates: {
-    canonical: "https://one-compiler-hub.vercel.app/explore",
+    canonical: getCanonicalUrl("/explore"),
+  },
+  openGraph: {
+    title: "Explore Developer Tools & Learning Stacks — OneCompilerHub",
+    description:
+      "Discover featured languages, popular web stacks, beginner-friendly starting points, and databases curated by our editorial team.",
+    url: getCanonicalUrl("/explore"),
+    siteName: SITE_NAME,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Explore Developer Tools & Learning Stacks — OneCompilerHub",
+    description:
+      "Discover featured languages, popular web stacks, beginner-friendly starting points, and databases curated by our editorial team.",
   },
 };
 
@@ -34,6 +49,11 @@ export default function ExplorePage() {
   const featured = getFeaturedTools();
   const popular = getPopularTools();
   const beginner = getBeginnerTools();
+
+  const breadcrumbSchema = getBreadcrumbJsonLd([
+    { name: "Home", path: "/" },
+    { name: "Explore", path: "/explore" },
+  ]);
 
   const categories = [
     {
@@ -68,6 +88,12 @@ export default function ExplorePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-navy-900 transition-colors">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
       <Navbar />
 
       <main className="flex-1">

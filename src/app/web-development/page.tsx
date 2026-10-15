@@ -5,19 +5,45 @@ import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ToolsGrid } from "@/components/tools-grid";
+import { getBreadcrumbJsonLd, getCanonicalUrl, SITE_NAME } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Web Development Playgrounds & Stacks — OneCompilerHub",
   description:
     "Test modern web technologies including HTML, JavaScript, React, Node.js, and PHP in OneCompilerHub.",
   alternates: {
-    canonical: "https://one-compiler-hub.vercel.app/web-development",
+    canonical: getCanonicalUrl("/web-development"),
+  },
+  openGraph: {
+    title: "Web Development Playgrounds & Stacks — OneCompilerHub",
+    description:
+      "Test modern web technologies including HTML, JavaScript, React, Node.js, and PHP in OneCompilerHub.",
+    url: getCanonicalUrl("/web-development"),
+    siteName: SITE_NAME,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Web Development Playgrounds & Stacks — OneCompilerHub",
+    description:
+      "Test modern web technologies including HTML, JavaScript, React, Node.js, and PHP in OneCompilerHub.",
   },
 };
 
 export default function WebDevPage() {
+  const breadcrumbSchema = getBreadcrumbJsonLd([
+    { name: "Home", path: "/" },
+    { name: "Web Development", path: "/web-development" },
+  ]);
+
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-navy-900 transition-colors">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
       <Navbar />
 
       <main className="flex-1">
@@ -32,21 +58,23 @@ export default function WebDevPage() {
               <span>Back to Home</span>
             </Link>
 
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent-500/10 text-accent-600 dark:text-accent-400 text-xs font-semibold uppercase tracking-wider mb-3">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 text-xs font-semibold uppercase tracking-wider mb-3">
               <Globe className="w-4 h-4" />
-              <span>Web Development</span>
+              <span>Web Technologies</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Web Development Playgrounds
             </h1>
-            <p className="mt-2 text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
-              Build responsive frontend components and server-side runtimes with HTML, JavaScript, React, Node.js, and PHP.
+            <p className="mt-2 text-base text-slate-600 dark:text-slate-300 max-w-2xl">
+              Build and preview responsive web layouts with HTML, CSS, JavaScript, React components, and backend runtimes.
             </p>
           </div>
         </section>
 
-        {/* Filtered Tools Grid pre-filtered to "web" */}
-        <ToolsGrid activeCategoryFilter="web" />
+        {/* Tools Section */}
+        <section className="py-12">
+          <ToolsGrid selectedCategory="web" />
+        </section>
       </main>
 
       <Footer />
