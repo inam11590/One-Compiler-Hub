@@ -31,6 +31,13 @@ import { PreviewPanel } from "./preview-panel";
 import { ConsolePanel } from "./console-panel";
 import { ConsoleLogEntry } from "@/types/preview";
 import { HTML_STARTER_TEMPLATES } from "@/lib/preview/templates";
+import {
+  submitExecution,
+  getExecutionStatus,
+  cancelExecution,
+  ExecutionApiError,
+} from "@/lib/api/execution-client";
+import { PYTHON_STARTER_EXAMPLES } from "@/lib/python/templates";
 
 const SettingsModal = dynamic(
   () => import("./settings-modal").then((m) => m.SettingsModal),
@@ -100,6 +107,8 @@ export function CodeWorkspace({
   const [previewKey, setPreviewKey] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const activeJobIdRef = useRef<string | null>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const isHtmlTool = currentTool.slug === "html";
 
@@ -227,20 +236,15 @@ export function CodeWorkspace({
     [panelWidth]
   );
 
-  // Handle run code trigger for non-HTML compilers
-  const handleRunCode = useCallback(() => {
-    setOutputState("waiting");
-    setOutputContent("");
-    showToast(`Connecting to ${currentTool.name} execution engine...`);
+  // Cleanup polling interval on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, []);
 
-    const timer = setTimeout(() => {
-      setOutputState("unavailable");
-      setExecutionTime("14ms");
-      showToast(`${currentTool.name} remote execution engine is preparing for production sandbox release.`);
-    }, 450);
-
-    return () => clearTimeout(timer);
-  }, [currentTool.name]);
 
   const handleToggleExpandOutput = useCallback(() => {
     setIsOutputExpanded((prev) => !prev);
@@ -583,6 +587,199 @@ export function CodeWorkspace({
     }
   };
 
+  // Handle run code trigger for non-HTML compilers
+  const handleRunCode = useCallback(async () => {
+    if (isHtmlTool) return;
+
+    if (currentTool.slug !== "python") {
+      setOutputState("unavailable");
+      setOutputContent(
+        `OneCompilerHub Notice:\n\n${currentTool.name} compiler is scheduled for a future step.\nOnly Python is currently enabled for server-side sandboxed execution in Step 7.`
+      );
+      showToast(`${currentTool.name} execution is coming soon.`);
+      return;
+    }
+
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+
+    // Collect Python source code
+    const pyFile = project.files.find((f) => f.name.endsWith(".py")) || activeFile;
+    const codeToRun = pyFile?.content || "";
+
+    if (!codeToRun.trim()) {
+      setOutputState("failed");
+      setOutputContent("Error: Cannot execute empty Python source code.");
+      showToast("Python source code is empty.");
+      return;
+    }
+
+    setOutputState("running");
+    setOutputContent("");
+    setExecutionTime(undefined);
+    showToast("Dispatching to sandboxed Python engine...");
+
+    try {
+      const res = await submitExecution({
+        language: "python",
+        source_code: codeToRun,
+        stdin: stdinInput.trim() ? stdinInput : undefined,
+      });
+
+      activeJobIdRef.current = res.execution_id;
+
+      if (res.status === "completed") {
+        setOutputState("completed");
+        setOutputContent(res.stdout || "Process finished with exit code 0 (no output).");
+        if (res.duration_ms) setExecutionTime(`${Math.round(res.duration_ms)}ms`);
+        showToast("Python execution completed.");
+      } else if (res.status === "timed_out") {
+        setOutputState("timeout");
+        const combined = [res.stdout, res.stderr, res.error || "Execution timed out after 5.0 seconds."]
+          .filter(Boolean)
+          .join("\n");
+        setOutputContent(combined);
+        if (res.duration_ms) setExecutionTime(`${Math.round(res.duration_ms)}ms`);
+        showToast("Execution timed out.");
+      } else if (res.status === "failed") {
+        setOutputState("failed");
+        const combined = [res.stdout, res.stderr, res.error].filter(Boolean).join("\n");
+        setOutputContent(combined || `Process exited with code ${res.exit_code ?? 1}.`);
+        if (res.duration_ms) setExecutionTime(`${Math.round(res.duration_ms)}ms`);
+        showToast("Execution finished with errors.");
+      } else if (res.status === "cancelled") {
+        setOutputState("cancelled");
+        setOutputContent("[Execution was cancelled]");
+        showToast("Execution cancelled.");
+      } else {
+        // Asynchronous / queued job - poll status
+        const jobId = activeJobIdRef.current;
+        if (!jobId) return;
+        let pollCount = 0;
+        pollingIntervalRef.current = setInterval(async () => {
+          pollCount += 1;
+          if (pollCount > 30) {
+            if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+            setOutputState("timeout");
+            setOutputContent("[Execution status polling timed out]");
+            return;
+          }
+          try {
+            const statusRes = await getExecutionStatus(jobId);
+            if (statusRes.status === "completed") {
+              if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+              setOutputState("completed");
+              setOutputContent(statusRes.stdout || "Process finished with exit code 0 (no output).");
+              if (statusRes.duration_ms) setExecutionTime(`${Math.round(statusRes.duration_ms)}ms`);
+              showToast("Python execution completed.");
+            } else if (statusRes.status === "failed" || statusRes.status === "timed_out") {
+              if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+              setOutputState(statusRes.status === "timed_out" ? "timeout" : "failed");
+              const combined = [statusRes.stdout, statusRes.stderr, statusRes.error].filter(Boolean).join("\n");
+              setOutputContent(combined || `Process exited with code ${statusRes.exit_code ?? 1}.`);
+              if (statusRes.duration_ms) setExecutionTime(`${Math.round(statusRes.duration_ms)}ms`);
+            } else if (statusRes.status === "cancelled") {
+              if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+              setOutputState("cancelled");
+              setOutputContent("[Execution was cancelled]");
+            }
+          } catch {
+            if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+          }
+        }, 300);
+      }
+    } catch (err: unknown) {
+      setOutputState("unavailable");
+      const isExecutionError = err instanceof ExecutionApiError;
+      const errorCode = isExecutionError ? err.code : (err as { code?: string })?.code;
+      const errorStatus = isExecutionError ? err.status : (err as { status?: number })?.status;
+      const errorMessage = err instanceof Error ? err.message : String(err);
+
+      if (errorCode === "network_error") {
+        setOutputContent(
+          "OneCompilerHub Execution Service Status:\n\n" +
+          "Unable to connect to the execution backend at " +
+          (process.env.NEXT_PUBLIC_EXECUTION_API_URL || "http://localhost:8000") +
+          ".\n\n" +
+          "To test Python code execution locally:\n" +
+          "1. Open a terminal in the 'backend/' directory\n" +
+          "2. Activate the virtual environment: source venv/bin/activate\n" +
+          "3. Run the API: uvicorn app.main:app --port 8000\n" +
+          "4. Enable execution in backend/.env: EXECUTION_ENABLED=true\n\n" +
+          "Production sandbox isolation guard is active."
+        );
+        showToast("Backend execution service is offline.");
+      } else if (errorStatus === 503) {
+        setOutputContent(
+          "OneCompilerHub Execution Service:\n\n" +
+          (errorMessage || "Code execution is currently disabled pending sandbox security verification.") +
+          "\n\nIn Step 7, verified Python sandboxing is ready on the backend server."
+        );
+        showToast("Code execution is currently disabled on the backend.");
+      } else {
+        setOutputContent(`Execution Request Failed:\n${errorMessage || "Unknown error"}`);
+        showToast("Execution request failed.");
+      }
+    }
+  }, [currentTool.name, currentTool.slug, isHtmlTool, project.files, activeFile, stdinInput]);
+
+  // Cancel running execution
+  const handleCancelCode = useCallback(async () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    if (activeJobIdRef.current) {
+      try {
+        await cancelExecution(activeJobIdRef.current);
+      } catch {
+        // ignore
+      }
+    }
+    setOutputState("cancelled");
+    setOutputContent((prev) => (prev ? prev + "\n[Process stopped by user]" : "[Process stopped by user]"));
+    showToast("Execution stopped.");
+  }, []);
+
+  // Select Python Starter Example
+  const handleSelectPythonExample = useCallback(
+    (exampleId: string) => {
+      const example = PYTHON_STARTER_EXAMPLES.find((e) => e.id === exampleId);
+      if (!example) return;
+
+      const mainFile = project.files.find((f) => f.name === "main.py") || activeFile;
+      const updatedFiles = project.files.map((file) => {
+        if (file.id === mainFile?.id) {
+          return {
+            ...file,
+            content: example.code,
+            isDirty: true,
+            updatedAt: Date.now(),
+          };
+        }
+        return file;
+      });
+
+      const updatedProject: WorkspaceProject = {
+        ...project,
+        files: updatedFiles,
+        updatedAt: Date.now(),
+      };
+
+      setProject(updatedProject);
+      persistProject(updatedProject, 0);
+
+      if (example.defaultStdin) {
+        setStdinInput(example.defaultStdin);
+      }
+
+      showToast(`Loaded example: ${example.name}`);
+    },
+    [project, activeFile, persistProject]
+  );
+
   // Determine Monaco Theme
   const monacoTheme =
     settings.theme === "auto"
@@ -612,12 +809,14 @@ export function CodeWorkspace({
         e.preventDefault();
         if (isHtmlTool) {
           handleTriggerRun();
+        } else {
+          handleRunCode();
         }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isHtmlTool, handleTriggerRun]);
+  }, [isHtmlTool, handleTriggerRun, handleRunCode]);
 
   return (
     <div
@@ -640,11 +839,14 @@ export function CodeWorkspace({
         isFullscreen={isFullscreen}
         onToggleFullscreen={handleToggleFullscreen}
         isSaving={isSaving}
+        isRunning={outputState === "running" || outputState === "waiting"}
         onSelectTemplate={isHtmlTool ? handleSelectTemplate : undefined}
+        onSelectPythonExample={currentTool.slug === "python" ? handleSelectPythonExample : undefined}
         onExportZip={isHtmlTool ? handleExportZip : undefined}
         onExportFile={isHtmlTool ? handleExportFile : undefined}
         onRunPreview={isHtmlTool ? handleTriggerRun : undefined}
         onRunCode={isHtmlTool ? undefined : handleRunCode}
+        onCancelCode={handleCancelCode}
         activeMobileTab={activeMobileTab}
         onSelectMobileTab={setActiveMobileTab}
       />
@@ -950,6 +1152,7 @@ export function CodeWorkspace({
                 isExpanded={isOutputExpanded}
                 onToggleExpand={handleToggleExpandOutput}
                 onTriggerRun={handleRunCode}
+                onCancelRun={handleCancelCode}
               />
             </div>
           </div>

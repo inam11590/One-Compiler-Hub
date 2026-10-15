@@ -20,12 +20,15 @@ import {
   Archive,
   Sun,
   Moon,
+  Square,
+  Loader2,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { ProgrammingTool } from "@/types";
 import { PROGRAMMING_TOOLS } from "@/data/tools";
 import { ToolIcon } from "@/components/tool-icons";
 import { HTML_STARTER_TEMPLATES } from "@/lib/preview/templates";
+import { PYTHON_STARTER_EXAMPLES } from "@/lib/python/templates";
 
 interface TopToolbarProps {
   projectName: string;
@@ -38,12 +41,16 @@ interface TopToolbarProps {
   isFullscreen: boolean;
   onToggleFullscreen: () => void;
   isSaving?: boolean;
+  isRunning?: boolean;
   // HTML Playground extensions
   onSelectTemplate?: (templateId: string) => void;
   onExportZip?: () => void;
   onExportFile?: (extension: "html" | "css" | "js") => void;
   onRunPreview?: () => void;
+  // Code execution extensions
   onRunCode?: () => void;
+  onCancelCode?: () => void;
+  onSelectPythonExample?: (exampleId: string) => void;
   activeMobileTab?: "editor" | "preview" | "console";
   onSelectMobileTab?: (tab: "editor" | "preview" | "console") => void;
 }
@@ -59,11 +66,14 @@ export function TopToolbar({
   isFullscreen,
   onToggleFullscreen,
   isSaving,
+  isRunning = false,
   onSelectTemplate,
   onExportZip,
   onExportFile,
   onRunPreview,
   onRunCode,
+  onCancelCode,
+  onSelectPythonExample,
   activeMobileTab = "editor",
   onSelectMobileTab,
 }: TopToolbarProps) {
@@ -76,6 +86,7 @@ export function TopToolbar({
   const { setTheme, resolvedTheme } = useTheme();
 
   const isHtml = currentTool.slug === "html";
+  const isPython = currentTool.slug === "python";
 
   const handleShare = () => {
     if (typeof window !== "undefined") {
@@ -209,7 +220,7 @@ export function TopToolbar({
           </div>
         )}
 
-        {/* Run Action */}
+        {/* Run / Stop Actions */}
         {isHtml ? (
           <button
             type="button"
@@ -220,19 +231,48 @@ export function TopToolbar({
             <Play className="w-3.5 h-3.5 fill-current" />
             <span className="hidden sm:inline">Run Preview</span>
           </button>
+        ) : isRunning ? (
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              disabled
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-700 text-white text-xs font-semibold shadow-xs cursor-wait"
+              title="Executing Python in sandboxed worker..."
+            >
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              <span>Running...</span>
+            </button>
+            {onCancelCode && (
+              <button
+                type="button"
+                onClick={onCancelCode}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white cursor-pointer text-xs font-semibold shadow-xs transition-all active:scale-95"
+                title="Stop running Python process"
+              >
+                <Square className="w-3 h-3 fill-white" />
+                <span>Stop</span>
+              </button>
+            )}
+          </div>
         ) : (
           <div className="relative">
             <button
               type="button"
               onClick={onRunCode || (() => setShowExecutionNotice(true))}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white cursor-pointer text-xs font-semibold shadow-xs shadow-brand-500/25 active:scale-95 transition-all"
-              title={`Execute ${currentTool.name} Code (Sandbox Guard Active)`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white cursor-pointer text-xs font-semibold shadow-xs transition-all active:scale-95 ${
+                isPython
+                  ? "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/25"
+                  : "bg-brand-500 hover:bg-brand-600 shadow-brand-500/25"
+              }`}
+              title={`Execute ${currentTool.name} Code in Sandbox`}
             >
               <Play className="w-3.5 h-3.5 fill-current" />
               <span>Run</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-black/20 text-white/90 font-mono ml-0.5">
-                Sandbox
-              </span>
+              {isPython && (
+                <span className="text-[10px] px-1.5 py-0.2 rounded bg-black/20 text-white/90 font-mono ml-0.5">
+                  Python 3
+                </span>
+              )}
             </button>
           </div>
         )}
@@ -279,6 +319,57 @@ export function TopToolbar({
                       </div>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
                         {tmpl.description}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Python Starter Examples Dropdown */}
+        {isPython && onSelectPythonExample && (
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setTemplateMenuOpen(!templateMenuOpen)}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-navy-800 hover:bg-slate-200 dark:hover:bg-navy-750 text-slate-700 dark:text-slate-200 text-xs font-medium border border-slate-200 dark:border-navy-700 transition-colors"
+              title="Python Starter Examples"
+            >
+              <LayoutTemplate className="w-3.5 h-3.5 text-emerald-500" />
+              <span className="hidden sm:inline">Examples</span>
+              <ChevronDown className="w-3 h-3 text-slate-400" />
+            </button>
+
+            {templateMenuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-30"
+                  onClick={() => setTemplateMenuOpen(false)}
+                />
+                <div className="absolute right-0 mt-1 w-72 max-h-96 overflow-y-auto bg-white dark:bg-navy-850 border border-slate-200 dark:border-navy-700 rounded-xl shadow-2xl z-40 p-1.5 animate-slide-up">
+                  <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    10 Python Starter Examples
+                  </div>
+                  {PYTHON_STARTER_EXAMPLES.map((example) => (
+                    <button
+                      key={example.id}
+                      type="button"
+                      onClick={() => {
+                        setTemplateMenuOpen(false);
+                        onSelectPythonExample(example.id);
+                      }}
+                      className="w-full text-left p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-navy-800 transition-colors group"
+                    >
+                      <div className="font-semibold text-xs text-slate-800 dark:text-white group-hover:text-emerald-500 flex items-center justify-between">
+                        <span>{example.name}</span>
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-navy-750 text-slate-400 font-normal">
+                          {example.category}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
+                        {example.description}
                       </p>
                     </button>
                   ))}

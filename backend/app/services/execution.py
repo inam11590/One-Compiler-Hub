@@ -7,10 +7,10 @@ SAFETY ENFORCEMENT:
 In Step 5, code execution submission is DISABLED by default in production.
 """
 
-from typing import Optional
+from typing import Dict, Optional
 from fastapi import HTTPException, status
 from app.core.config import settings
-from app.core.constants import ExecutionStatus
+from app.core.constants import ExecutionStatus, LanguageAvailability
 from app.core.logging import log_security_event, logger
 from app.models.execution import ExecutionJob
 from app.schemas.execution import (
@@ -23,6 +23,7 @@ from app.services.queue import JobQueueService, job_queue
 from app.services.registry import language_registry
 from app.workers.base import BaseExecutionWorker
 from app.workers.mock import MockExecutionWorker
+from app.workers.python_sandbox import PythonSandboxWorker
 
 
 class ExecutionService:
@@ -35,16 +36,21 @@ class ExecutionService:
     ) -> None:
         self.queue = queue
         self._worker = worker
+        self._sandbox_workers: Dict[str, BaseExecutionWorker] = {}
 
-    def _get_worker(self) -> BaseExecutionWorker:
+    def _get_worker(self, language: str = "python") -> BaseExecutionWorker:
         if self._worker:
             return self._worker
 
         if settings.MOCK_WORKER_ENABLED and settings.ENVIRONMENT in ("test", "development"):
-            self._worker = MockExecutionWorker()
-            return self._worker
+            return MockExecutionWorker()
 
-        raise RuntimeError("No execution worker registered or available for this environment.")
+        if language == "python":
+            if "python" not in self._sandbox_workers:
+                self._sandbox_workers["python"] = PythonSandboxWorker()
+            return self._sandbox_workers["python"]
+
+        raise RuntimeError(f"No execution worker registered or available for language '{language}'.")
 
     async def submit_execution(
         self,
@@ -65,17 +71,24 @@ class ExecutionService:
                 detail=f"Unsupported language identifier: '{request.language}'. View /api/v1/languages for supported tools.",
             )
 
-        # 2. Check if code execution is enabled on this instance (Disabled in production for Step 5)
+        # 2. Verify language is currently available for execution (Python only in Step 7)
+        if not settings.MOCK_WORKER_ENABLED and lang_entry.availability_status != LanguageAvailability.AVAILABLE:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Execution for '{lang_entry.display_name}' is not yet enabled. Only Python is currently available for sandboxed execution in Step 7.",
+            )
+
+        # 3. Check if code execution is enabled on this instance
         if not settings.EXECUTION_ENABLED:
             logger.info(
-                f"Execution rejected: backend execution engine is currently disabled (Step 5 security default). Language: {request.language}"
+                f"Execution rejected: backend execution engine is currently disabled. Language: {request.language}"
             )
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Code execution is currently disabled pending sandbox security verification.",
             )
 
-        # 3. Create job
+        # 4. Create and enqueue job
         job = ExecutionJob(
             language=lang_entry.id,
             source_code=request.source_code,
@@ -87,11 +100,10 @@ class ExecutionService:
 
         await self.queue.enqueue(job)
 
-        # 4. If mock worker is enabled (test mode), process job synchronously or async
-        if settings.MOCK_WORKER_ENABLED:
-            worker = self._get_worker()
-            job = await worker.execute(job)
-            await self.queue.update_job(job)
+        # 5. Dispatch to isolated worker
+        worker = self._get_worker(lang_entry.id)
+        job = await worker.execute(job)
+        await self.queue.update_job(job)
 
         return self._to_response(job)
 

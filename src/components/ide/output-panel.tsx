@@ -14,6 +14,7 @@ import {
   Maximize2,
   Minimize2,
   Play,
+  Square,
   ShieldAlert,
   Loader2,
   XCircle,
@@ -31,6 +32,7 @@ interface OutputPanelProps {
   isExpanded?: boolean;
   onToggleExpand?: () => void;
   onTriggerRun?: () => void;
+  onCancelRun?: () => void;
 }
 
 export function OutputPanel({
@@ -44,6 +46,7 @@ export function OutputPanel({
   isExpanded = false,
   onToggleExpand,
   onTriggerRun,
+  onCancelRun,
 }: OutputPanelProps) {
   const [activeTab, setActiveTab] = useState<"output" | "terminal" | "problems" | "input">("output");
   const [copied, setCopied] = useState(false);
@@ -189,18 +192,29 @@ export function OutputPanel({
 
         {/* Action Buttons */}
         <div className="flex items-center gap-1.5 shrink-0">
-          {onTriggerRun && (
+          {outputState === "running" && onCancelRun ? (
+            <button
+              type="button"
+              onClick={onCancelRun}
+              className="flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold text-white bg-red-600 hover:bg-red-500 rounded transition-colors mr-0.5"
+              title="Stop running execution"
+              aria-label="Stop running execution"
+            >
+              <Square className="w-2.5 h-2.5 fill-white" />
+              <span>Stop</span>
+            </button>
+          ) : onTriggerRun ? (
             <button
               type="button"
               onClick={onTriggerRun}
-              className="flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold text-white bg-brand-600 hover:bg-brand-500 rounded transition-colors mr-0.5"
+              className="flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded transition-colors mr-0.5"
               title={`Run ${languageName} code`}
               aria-label={`Run ${languageName} code`}
             >
               <Play className="w-2.5 h-2.5 fill-white" />
               <span>Run</span>
             </button>
-          )}
+          ) : null}
 
           {activeTab === "output" && (
             <>

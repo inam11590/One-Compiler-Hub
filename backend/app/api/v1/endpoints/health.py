@@ -21,14 +21,15 @@ async def get_health() -> HealthResponse:
         environment=settings.ENVIRONMENT,
         capabilities=ExecutionCapabilities(
             execution_submission_enabled=settings.EXECUTION_ENABLED,
-            sandbox_mode="mock_test" if settings.MOCK_WORKER_ENABLED else "disabled",
+            sandbox_mode="mock_test" if settings.MOCK_WORKER_ENABLED else ("python_sandbox" if settings.EXECUTION_ENABLED else "disabled"),
             max_source_code_bytes=MAX_SOURCE_CODE_BYTES,
             max_stdin_bytes=MAX_STDIN_BYTES,
             default_timeout_seconds=DEFAULT_EXECUTION_TIMEOUT_SECONDS,
         ),
         extra={
             "service": "OneCompilerHub Execution Backend",
-            "step": 5,
-            "security_status": "Step 5 Sandbox Foundation Active",
+            "step": 7,
+            "security_status": "Step 7 Sandboxed Python Execution Engine Active",
+            "active_runtime": "cpython_3.12",
         },
     )

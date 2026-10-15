@@ -85,7 +85,7 @@ class LanguageRegistryService:
                 supported_file_extensions=[".py"],
                 default_file_name="main.py",
                 execution_mode=ExecutionMode.INTERPRETED,
-                availability_status=LanguageAvailability.COMING_SOON,
+                availability_status=LanguageAvailability.AVAILABLE,
                 resource_policy=RESOURCE_POLICY_STANDARD,
                 description="Interpreted high-level language for algorithms, scripting, and data analysis.",
             ),
