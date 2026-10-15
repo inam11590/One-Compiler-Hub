@@ -89,3 +89,14 @@ export interface EditorSettings {
   layout: "bottom" | "right";
   theme: "vs-dark" | "vs" | "auto";
 }
+
+export type OutputState =
+  | "idle"
+  | "waiting"
+  | "running"
+  | "completed"
+  | "failed"
+  | "timeout"
+  | "cancelled"
+  | "unavailable";
+

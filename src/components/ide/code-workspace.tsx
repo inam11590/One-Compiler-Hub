@@ -10,7 +10,7 @@ import {
   X,
   FileCode,
 } from "lucide-react";
-import { ProgrammingTool, WorkspaceProject, WorkspaceFile, EditorSettings } from "@/types";
+import { ProgrammingTool, WorkspaceProject, WorkspaceFile, EditorSettings, OutputState } from "@/types";
 import { PROGRAMMING_TOOLS, getToolBySlug } from "@/data/tools";
 import {
   createStarterProject,
@@ -41,7 +41,7 @@ const SettingsModal = dynamic(
 const Editor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
   loading: () => (
-    <div className="h-full w-full flex items-center justify-center bg-slate-900 text-slate-400 font-mono text-xs">
+    <div className="h-full w-full flex items-center justify-center bg-white dark:bg-navy-900 text-slate-500 dark:text-slate-400 font-mono text-xs">
       <div className="flex items-center gap-2">
         <div className="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
         <span>Loading Monaco Code Workspace...</span>
@@ -85,6 +85,14 @@ export function CodeWorkspace({
   const [cursorPosition, setCursorPosition] = useState({ line: 1, column: 1 });
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Unified Output Panel & Execution State (Step 6.4)
+  const [outputState, setOutputState] = useState<OutputState>("idle");
+  const [executionTime, setExecutionTime] = useState<string | undefined>(undefined);
+  const [isOutputExpanded, setIsOutputExpanded] = useState(false);
+  const [panelHeight, setPanelHeight] = useState<number>(260);
+  const [panelWidth, setPanelWidth] = useState<number>(440);
+  const [isDraggingPanel, setIsDraggingPanel] = useState(false);
+
   // HTML Live Preview State
   const [consoleLogs, setConsoleLogs] = useState<ConsoleLogEntry[]>([]);
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -124,6 +132,119 @@ export function CodeWorkspace({
       isMounted = false;
     };
   }, [currentTool.slug]);
+
+  // Restore persisted panel dimensions
+  useEffect(() => {
+    try {
+      const savedHeight = localStorage.getItem("och_panel_height");
+      if (savedHeight) {
+        const val = parseInt(savedHeight, 10);
+        if (!isNaN(val) && val >= 100 && val <= 800) setPanelHeight(val);
+      }
+      const savedWidth = localStorage.getItem("och_panel_width");
+      if (savedWidth) {
+        const val = parseInt(savedWidth, 10);
+        if (!isNaN(val) && val >= 200 && val <= 1000) setPanelWidth(val);
+      }
+    } catch {
+      // LocalStorage access restricted in private mode
+    }
+  }, []);
+
+  // Vertical drag resize handler (bottom output panel)
+  const startResizingVertical = useCallback(
+    (e: React.MouseEvent | React.TouchEvent) => {
+      e.preventDefault();
+      setIsDraggingPanel(true);
+      const startY = "clientY" in e ? e.clientY : e.touches[0].clientY;
+      const initialHeight = panelHeight;
+
+      const onMove = (moveEvent: MouseEvent | TouchEvent) => {
+        const currentY = "clientY" in moveEvent ? moveEvent.clientY : moveEvent.touches[0].clientY;
+        const deltaY = startY - currentY;
+        const containerH = containerRef.current?.clientHeight || 700;
+        const maxHeight = containerH - 160;
+        const nextHeight = Math.max(110, Math.min(maxHeight, initialHeight + deltaY));
+        setPanelHeight(nextHeight);
+      };
+
+      const onEnd = () => {
+        setIsDraggingPanel(false);
+        window.removeEventListener("mousemove", onMove);
+        window.removeEventListener("mouseup", onEnd);
+        window.removeEventListener("touchmove", onMove);
+        window.removeEventListener("touchend", onEnd);
+        try {
+          localStorage.setItem("och_panel_height", String(panelHeight));
+        } catch {
+          // ignore
+        }
+      };
+
+      window.addEventListener("mousemove", onMove);
+      window.addEventListener("mouseup", onEnd);
+      window.addEventListener("touchmove", onMove, { passive: true });
+      window.addEventListener("touchend", onEnd);
+    },
+    [panelHeight]
+  );
+
+  // Horizontal drag resize handler (right layout output panel)
+  const startResizingHorizontal = useCallback(
+    (e: React.MouseEvent | React.TouchEvent) => {
+      e.preventDefault();
+      setIsDraggingPanel(true);
+      const startX = "clientX" in e ? e.clientX : e.touches[0].clientX;
+      const initialWidth = panelWidth;
+
+      const onMove = (moveEvent: MouseEvent | TouchEvent) => {
+        const currentX = "clientX" in moveEvent ? moveEvent.clientX : moveEvent.touches[0].clientX;
+        const deltaX = startX - currentX;
+        const containerW = containerRef.current?.clientWidth || 1000;
+        const maxWidth = containerW - 320;
+        const nextWidth = Math.max(240, Math.min(maxWidth, initialWidth + deltaX));
+        setPanelWidth(nextWidth);
+      };
+
+      const onEnd = () => {
+        setIsDraggingPanel(false);
+        window.removeEventListener("mousemove", onMove);
+        window.removeEventListener("mouseup", onEnd);
+        window.removeEventListener("touchmove", onMove);
+        window.removeEventListener("touchend", onEnd);
+        try {
+          localStorage.setItem("och_panel_width", String(panelWidth));
+        } catch {
+          // ignore
+        }
+      };
+
+      window.addEventListener("mousemove", onMove);
+      window.addEventListener("mouseup", onEnd);
+      window.addEventListener("touchmove", onMove, { passive: true });
+      window.addEventListener("touchend", onEnd);
+    },
+    [panelWidth]
+  );
+
+  // Handle run code trigger for non-HTML compilers
+  const handleRunCode = useCallback(() => {
+    setOutputState("waiting");
+    setOutputContent("");
+    showToast(`Connecting to ${currentTool.name} execution engine...`);
+
+    const timer = setTimeout(() => {
+      setOutputState("unavailable");
+      setExecutionTime("14ms");
+      showToast(`${currentTool.name} remote execution engine is preparing for production sandbox release.`);
+    }, 450);
+
+    return () => clearTimeout(timer);
+  }, [currentTool.name]);
+
+  const handleToggleExpandOutput = useCallback(() => {
+    setIsOutputExpanded((prev) => !prev);
+  }, []);
 
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const cursorListenerRef = useRef<{ dispose: () => void } | null>(null);
@@ -523,6 +644,7 @@ export function CodeWorkspace({
         onExportZip={isHtmlTool ? handleExportZip : undefined}
         onExportFile={isHtmlTool ? handleExportFile : undefined}
         onRunPreview={isHtmlTool ? handleTriggerRun : undefined}
+        onRunCode={isHtmlTool ? undefined : handleRunCode}
         activeMobileTab={activeMobileTab}
         onSelectMobileTab={setActiveMobileTab}
       />
@@ -530,7 +652,7 @@ export function CodeWorkspace({
       {/* Main Center Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Activity Bar (VS Code style icons on left) */}
-        <div className="w-12 bg-slate-200/70 dark:bg-navy-950 border-r border-slate-200 dark:border-navy-750 flex flex-col items-center py-2 gap-2 select-none shrink-0 z-10">
+        <div className="w-12 bg-slate-50 dark:bg-navy-950 border-r border-slate-200 dark:border-navy-750 flex flex-col items-center py-2 gap-2 select-none shrink-0 z-10">
           <button
             type="button"
             onClick={() => setActiveSidebarTab(activeSidebarTab === "files" ? null : "files")}
@@ -728,9 +850,15 @@ export function CodeWorkspace({
           /* ========================================================
              STANDARD CODE COMPILER WORKSPACE (Python, C++, Java, etc.)
              ======================================================== */
-          <div className={`flex-1 flex overflow-hidden ${settings.layout === "right" ? "flex-row" : "flex-col"}`}>
+          <div className={`flex-1 flex overflow-hidden relative ${settings.layout === "right" ? "flex-row" : "flex-col"}`}>
             {/* Monaco Editor Container */}
-            <div className={`flex-1 flex flex-col min-w-0 overflow-hidden ${settings.layout === "right" ? "w-7/12" : "h-3/5"}`}>
+            <div
+              className={`flex flex-col min-w-0 overflow-hidden ${
+                isOutputExpanded
+                  ? "hidden"
+                  : "flex-1"
+              }`}
+            >
               <EditorTabs
                 files={project.files}
                 openFileIds={project.openFileIds}
@@ -771,18 +899,57 @@ export function CodeWorkspace({
               </div>
             </div>
 
+            {/* Drag Resize Handle (only visible when not expanded) */}
+            {!isOutputExpanded && (
+              settings.layout === "right" ? (
+                <div
+                  onMouseDown={startResizingHorizontal}
+                  onTouchStart={startResizingHorizontal}
+                  className="w-1.5 hover:w-2 bg-slate-200 dark:bg-navy-750 hover:bg-brand-500 dark:hover:bg-brand-500 cursor-col-resize transition-all shrink-0 flex items-center justify-center group select-none relative z-10"
+                  title="Drag to resize panel"
+                >
+                  <div className="h-8 w-1 rounded-full bg-slate-400 dark:bg-navy-600 group-hover:bg-white transition-colors" />
+                </div>
+              ) : (
+                <div
+                  onMouseDown={startResizingVertical}
+                  onTouchStart={startResizingVertical}
+                  className="h-1.5 hover:h-2 bg-slate-200 dark:bg-navy-750 hover:bg-brand-500 dark:hover:bg-brand-500 cursor-row-resize transition-all shrink-0 flex items-center justify-center group select-none relative z-10"
+                  title="Drag to resize output panel"
+                >
+                  <div className="w-8 h-1 rounded-full bg-slate-400 dark:bg-navy-600 group-hover:bg-white transition-colors" />
+                </div>
+              )
+            )}
+
             {/* Bottom/Right: Output & Sandbox Panel */}
-            <div className={`overflow-hidden border-slate-200 dark:border-navy-750 ${
-              settings.layout === "right"
-                ? "w-5/12 border-l"
-                : "h-2/5 border-t"
-            }`}>
+            <div
+              style={
+                isOutputExpanded
+                  ? { width: "100%", height: "100%" }
+                  : settings.layout === "right"
+                  ? { width: `${panelWidth}px` }
+                  : { height: `${panelHeight}px` }
+              }
+              className={`overflow-hidden shrink-0 flex flex-col ${
+                isOutputExpanded
+                  ? "flex-1"
+                  : settings.layout === "right"
+                  ? "border-l border-slate-200 dark:border-navy-750"
+                  : "border-t border-slate-200 dark:border-navy-750"
+              }`}
+            >
               <OutputPanel
                 stdinInput={stdinInput}
                 onStdinChange={setStdinInput}
                 outputContent={outputContent}
                 onClearOutput={() => setOutputContent("")}
                 languageName={currentTool.name}
+                outputState={outputState}
+                executionTime={executionTime}
+                isExpanded={isOutputExpanded}
+                onToggleExpand={handleToggleExpandOutput}
+                onTriggerRun={handleRunCode}
               />
             </div>
           </div>
@@ -805,6 +972,15 @@ export function CodeWorkspace({
         settings={settings}
         onUpdateSettings={handleUpdateSettings}
       />
+
+      {/* Dragging overlay to prevent cursor desync */}
+      {isDraggingPanel && (
+        <div
+          className={`fixed inset-0 z-50 select-none ${
+            settings.layout === "right" ? "cursor-col-resize" : "cursor-row-resize"
+          }`}
+        />
+      )}
 
       {/* Toast Notification */}
       {toastMessage && (

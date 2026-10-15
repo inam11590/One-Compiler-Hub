@@ -145,9 +145,9 @@ export function PreviewPanel({
   const getDeviceWidthClass = () => {
     switch (deviceMode) {
       case "mobile":
-        return "max-w-[375px] h-[667px] my-auto shadow-2xl rounded-2xl border-4 border-slate-700 dark:border-navy-700";
+        return "max-w-[375px] h-[667px] my-auto shadow-2xl rounded-2xl border-4 border-slate-300 dark:border-navy-700 bg-white";
       case "tablet":
-        return "max-w-[768px] h-[92%] my-auto shadow-xl rounded-xl border-2 border-slate-600 dark:border-navy-700";
+        return "max-w-[768px] h-[92%] my-auto shadow-xl rounded-xl border-2 border-slate-300 dark:border-navy-700 bg-white";
       case "desktop":
       default:
         return "w-full h-full";
@@ -157,8 +157,8 @@ export function PreviewPanel({
   return (
     <div
       ref={containerRef}
-      className={`flex flex-col bg-slate-900 border-l border-slate-200 dark:border-navy-750 overflow-hidden ${
-        isFullscreen ? "fixed inset-0 z-50 bg-slate-950" : "h-full w-full"
+      className={`flex flex-col bg-slate-100 dark:bg-navy-950 border-l border-slate-200 dark:border-navy-750 overflow-hidden ${
+        isFullscreen ? "fixed inset-0 z-50 bg-white dark:bg-slate-950" : "h-full w-full"
       }`}
     >
       {/* Top Preview Toolbar */}

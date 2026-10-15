@@ -72,7 +72,7 @@ export default function EditorSlugPage({ params }: EditorSlugPageProps) {
   const softwareSchema = getSoftwareApplicationJsonLd(tool.slug);
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-slate-900 flex flex-col">
+    <div className="h-screen w-screen overflow-hidden bg-white dark:bg-navy-950 flex flex-col">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

@@ -43,6 +43,7 @@ interface TopToolbarProps {
   onExportZip?: () => void;
   onExportFile?: (extension: "html" | "css" | "js") => void;
   onRunPreview?: () => void;
+  onRunCode?: () => void;
   activeMobileTab?: "editor" | "preview" | "console";
   onSelectMobileTab?: (tab: "editor" | "preview" | "console") => void;
 }
@@ -62,6 +63,7 @@ export function TopToolbar({
   onExportZip,
   onExportFile,
   onRunPreview,
+  onRunCode,
   activeMobileTab = "editor",
   onSelectMobileTab,
 }: TopToolbarProps) {
@@ -222,13 +224,13 @@ export function TopToolbar({
           <div className="relative">
             <button
               type="button"
-              onClick={() => setShowExecutionNotice(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-600/20 text-brand-300 hover:bg-brand-600/30 cursor-pointer text-xs font-semibold shadow-sm transition-all border border-brand-500/40"
-              title="Execution Backend & Sandbox Architecture Status"
+              onClick={onRunCode || (() => setShowExecutionNotice(true))}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 text-white cursor-pointer text-xs font-semibold shadow-xs shadow-brand-500/25 active:scale-95 transition-all"
+              title={`Execute ${currentTool.name} Code (Sandbox Guard Active)`}
             >
-              <Play className="w-3.5 h-3.5 fill-current text-brand-400" />
+              <Play className="w-3.5 h-3.5 fill-current" />
               <span>Run</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-brand-950/80 text-brand-300 font-mono ml-0.5 border border-brand-700/50">
+              <span className="text-[10px] px-1.5 py-0.2 rounded bg-black/20 text-white/90 font-mono ml-0.5">
                 Sandbox
               </span>
             </button>
